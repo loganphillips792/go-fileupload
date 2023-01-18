@@ -78,7 +78,8 @@ func main() {
 	r.HandleFunc("/uploadfile/", envHandler.UploadFileHandler).Methods("POST")
 	r.HandleFunc("/images/", envHandler.GetAllFiles).Methods("GET")
 	r.HandleFunc("/images/{id}", envHandler.DeleteImage).Methods("DELETE")
-	r.HandleFunc("/download/", envHandler.DownloadCSV).Methods("GET")
+	r.HandleFunc("/download_csv/", envHandler.DownloadCSV).Methods("GET")
+	r.HandleFunc("/download_image/", envHandler.DownloadImage).Methods("GET")
 	r.HandleFunc("/file/", FileHandler)
 	r.HandleFunc("/hello", HelloWorld)
 
@@ -343,6 +344,22 @@ func (handler *Handler) DownloadCSV(w http.ResponseWriter, r *http.Request) {
 	//io.Copy(w, f)
 }
 
+func (handler *Handler) DownloadImage(w http.ResponseWriter, r *http.Request) {
+	// open file
+	f, err := os.Open("./data/IMG_7015.jpg")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// remember to close the file at the end of the program
+	defer f.Close()
+
+	w.Header().Add("Content-Disposition", `attachment; filename="image.jpeg"`)
+	http.ServeFile(w, r, "./data/IMG_7015.jpg")
+
+	//io.Copy(w, f)
+}
+
 // https://www.reddit.com/r/reactjs/comments/5xgdzh/how_to_correctly_store_user_information/
 // https://www.reddit.com/r/reactjs/comments/gek8as/recommended_approach_to_check_if_user_is/
 // https://stackoverflow.com/questions/49819183/react-what-is-the-best-way-to-handle-login-and-authentication
@@ -356,5 +373,4 @@ func Login() {
 func HelloWorld(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Write([]byte(`{"status":"OK"}`))
-
 }

@@ -89,6 +89,7 @@ func main() {
 }
 
 func initializeDatabase() *sql.DB {
+	log.Print("Initializing SQL Lite database...")
 	// TODO: only create if it doesn't exist
 	file, err := os.Create("data.db")
 

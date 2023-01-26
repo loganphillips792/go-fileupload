@@ -22,3 +22,11 @@ Simple app to practice uploading files in React and GO
 2. JDBC URL: ```jdbc:sqlite:/Users/logan/go-fileupload/backend/data.db```
 3. Path: ```/Users/logan/go-fileupload/backend/data.db```
 4. Connect
+
+# Uploading Images
+## Through UI
+
+1. Choose image to upload
+2. If a name is provided, it will save the image with that name + original file extension. If there is no name provided, it will set the name to be the current UNIX timestamp.
+
+## Through Curl Command

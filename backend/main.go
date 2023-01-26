@@ -174,17 +174,16 @@ func (handler *Handler) UploadFileHandler(w http.ResponseWriter, r *http.Request
 	handler.logger.Infof("File name from user %s ", r.Form.Get("file_name"))
 
 	// Create a new file in the uploads directory
-	//filePath := ""
-
-	// if r.Form.Get("file_name") != "" {
-	// 	filePath = fmt.Sprintf("./uploads/%s%s", r.Form.Get("file_name"), filepath.Ext(fileHeader.Filename))
-	// } else {
-	// 	filePath = fmt.Sprintf("./uploads/%d%s", time.Now().UnixNano(), filepath.Ext(fileHeader.Filename))
-	// }
+	filePath := ""
+	if r.Form.Get("file_name") != "" {
+		filePath = fmt.Sprintf("./uploads/%s%s", r.Form.Get("file_name"), filepath.Ext(fileHeader.Filename))
+	} else {
+		filePath = fmt.Sprintf("./uploads/%d%s", time.Now().UnixNano(), filepath.Ext(fileHeader.Filename))
+	}
 	// dst, err := os.Create(filePath)
-	file_path := fmt.Sprintf("./uploads/%d%s", time.Now().UnixNano(), filepath.Ext(fileHeader.Filename))
-	dst, err := os.Create(file_path)
-	fmt.Println(file_path)
+	// file_path := fmt.Sprintf("./uploads/%d%s", time.Now().UnixNano(), filepath.Ext(fileHeader.Filename))
+	dst, err := os.Create(filePath)
+	fmt.Println(filePath)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -199,7 +198,7 @@ func (handler *Handler) UploadFileHandler(w http.ResponseWriter, r *http.Request
 		"SQL", query,
 	)
 
-	_, err = handler.dbConn.Exec(query, r.Form.Get("file_name"), file_path)
+	_, err = handler.dbConn.Exec(query, r.Form.Get("file_name"), filePath)
 
 	if err != nil {
 		log.Fatal(err.Error())

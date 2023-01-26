@@ -13,10 +13,13 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
+	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -64,18 +67,20 @@ func main() {
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},
 		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
+		AllowMethods: []string{
+			http.MethodPost,
+			http.MethodGet,
+		},
 	}))
 
 	e.GET("/hello", HelloWorld)
 	e.GET("/images/", envHandler.GetAllFiles)
+	e.POST("/uploadfile/", envHandler.UploadFileHandler, middleware.BodyLimit("1M")) // Body limit middleware sets the maximum allowed size for a request body, if the size exceeds the configured limit, it sends “413 - Request Entity Too Large” response. The body limit is determined based on both Content-Length request header and actual content read, which makes it super secure
 
 	e.Logger.Fatal(e.Start(":8000"))
 
 	/*
 
-
-
-		r.HandleFunc("/uploadfile/", envHandler.UploadFileHandler).Methods("POST")
 		r.HandleFunc("/images/{id}", envHandler.DeleteImage).Methods("DELETE")
 		r.HandleFunc("/download_csv/", envHandler.DownloadCSV).Methods("GET")
 		r.HandleFunc("/download_image/", envHandler.DownloadImage).Methods("GET")
@@ -120,25 +125,67 @@ func initializeDatabase() *sql.DB {
 	return db
 }
 
-/*
-const MAX_UPLOAD_SIZE = 1024 * 1024 // 1 MB
+func (handler *Handler) UploadFileHandler(c echo.Context) error {
+	handler.logger.Infof("Content Length %d ", c.Request().ContentLength)
 
-func (handler *Handler) UploadFileHandler(w http.ResponseWriter, r *http.Request) {
-	handler.logger.Infof("Content Length %d ", r.ContentLength)
+	file, err := c.FormFile("file")
 
-	r.Body = http.MaxBytesReader(w, r.Body, MAX_UPLOAD_SIZE)
-	if err := r.ParseMultipartForm(MAX_UPLOAD_SIZE); err != nil {
-		http.Error(w, "The uploaded file is too big. Please choose an file that's less than 1MB in size", http.StatusBadRequest)
-		return
-	}
-
-	file, fileHeader, err := r.FormFile("file")
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
-	defer file.Close()
+	src, err := file.Open()
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	defer src.Close()
+
+	// Create the uploads fodler if it doesn't already exist
+	err = os.MkdirAll("./uploads", os.ModePerm)
+
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	handler.logger.Infof("File name from user %s ", c.FormValue("file_name"))
+
+	// Create a new file in the uploads directory
+	filePath := ""
+	if c.FormValue("file_name") != "" {
+		filePath = fmt.Sprintf("./uploads/%s%s", c.FormValue("file_name"), filepath.Ext(file.Filename))
+	} else {
+		filePath = fmt.Sprintf("./uploads/%d%s", time.Now().UnixNano(), filepath.Ext(file.Filename))
+	}
+
+	dst, err := os.Create(filePath)
+	fmt.Println(filePath)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	defer dst.Close()
+
+	// Copy the uploaded file to the filesystem at the specified destination
+	if _, err = io.Copy(dst, src); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	// file save was successsful
+	query := "INSERT INTO images (name, file_path) VALUES (?, ?)"
+
+	handler.logger.Infow("Running SQL statement",
+		"SQL", query,
+	)
+
+	_, err = handler.dbConn.Exec(query, c.FormValue("file_name"), filePath)
+
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	changeImageToBlackAndWhite()
+
+	return c.Blob(http.StatusOK, "application/json", []byte(`{"response":"Upload Successful!!"}`))
 
 	// check that the file is only image file
 	// https://freshman.tech/file-upload-golang/#restrict-the-type-of-the-uploaded-file
@@ -159,61 +206,6 @@ func (handler *Handler) UploadFileHandler(w http.ResponseWriter, r *http.Request
 
 	// handler.logger.Infof("File type is %s ", filetype)
 
-	// Create the uploads fodler if it doesn't already exist
-	err = os.MkdirAll("./uploads", os.ModePerm)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	handler.logger.Infof("File name from user %s ", r.Form.Get("file_name"))
-
-	// Create a new file in the uploads directory
-	filePath := ""
-	if r.Form.Get("file_name") != "" {
-		filePath = fmt.Sprintf("./uploads/%s%s", r.Form.Get("file_name"), filepath.Ext(fileHeader.Filename))
-	} else {
-		filePath = fmt.Sprintf("./uploads/%d%s", time.Now().UnixNano(), filepath.Ext(fileHeader.Filename))
-	}
-	// dst, err := os.Create(filePath)
-	// file_path := fmt.Sprintf("./uploads/%d%s", time.Now().UnixNano(), filepath.Ext(fileHeader.Filename))
-	dst, err := os.Create(filePath)
-	fmt.Println(filePath)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	defer dst.Close()
-
-	// file save was successsful
-	query := "INSERT INTO images (name, file_path) VALUES (?, ?)"
-
-	handler.logger.Infow("Running SQL statement",
-		"SQL", query,
-	)
-
-	_, err = handler.dbConn.Exec(query, r.Form.Get("file_name"), filePath)
-
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-
-	// Copy the uploaded file to the filesystem
-	// at the specified destination
-	_, err = io.Copy(dst, file)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	fmt.Fprintf(w, "Upload successful")
-
-	w.Write([]byte(`{"response":"Upload successful"}`))
-
-	changeImageToBlackAndWhite()
-
 }
 
 // When user successfully uploads image, they can click "convert to black and white". The new image will
@@ -222,7 +214,7 @@ func (handler *Handler) UploadFileHandler(w http.ResponseWriter, r *http.Request
 func changeImageToBlackAndWhite() {
 	fmt.Println("Converting image to black and white...")
 }
-*/
+
 func (handler *Handler) GetAllFiles(c echo.Context) error {
 	handler.logger.Info("Retreiving all images....")
 

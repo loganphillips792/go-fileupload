@@ -19,6 +19,7 @@ import (
 	"os"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	_ "github.com/mattn/go-sqlite3"
 	"go.uber.org/zap"
 )
@@ -58,10 +59,25 @@ func main() {
 		sugar.Infof("Failed to fetch URL: %s", url)
 	*/
 
+	// cors := cors.New(cors.Options{
+	// 	AllowedOrigins: []string{"*"},
+	// 	AllowedMethods: []string{
+	// 		http.MethodPost,
+	// 		http.MethodGet,
+	// 	},
+	// 	AllowedHeaders:   []string{"*"},
+	// 	AllowCredentials: false,
+	// })
+
 	e := echo.New()
 
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"*"},
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
+	}))
+
 	e.GET("/hello", HelloWorld)
-	e.GET("/images", envHandler.GetAllFiles)
+	e.GET("/images/", envHandler.GetAllFiles)
 
 	e.Logger.Fatal(e.Start(":8000"))
 

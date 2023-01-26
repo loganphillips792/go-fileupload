@@ -43,11 +43,11 @@ func main() {
 	db := initializeDatabase()
 	defer db.Close()
 
-	// logger, _ := zap.NewProduction()
-	// defer logger.Sync() // flushes buffer, if any
-	// sugar := logger.Sugar()
+	logger, _ := zap.NewProduction()
+	defer logger.Sync() // flushes buffer, if any
+	sugar := logger.Sugar()
 
-	// envHandler := &Handler{logger: sugar, dbConn: db}
+	envHandler := &Handler{logger: sugar, dbConn: db}
 	/*
 		sugar.Infow("failed to fetch URL",
 			// Structured context as loosely typed key-value pairs.
@@ -61,6 +61,7 @@ func main() {
 	e := echo.New()
 
 	e.GET("/hello", HelloWorld)
+	e.GET("/images", envHandler.GetAllFiles)
 
 	e.Logger.Fatal(e.Start(":8000"))
 
@@ -231,11 +232,11 @@ func (handler *Handler) UploadFileHandler(w http.ResponseWriter, r *http.Request
 func changeImageToBlackAndWhite() {
 	fmt.Println("Converting image to black and white...")
 }
-
-func (handler *Handler) GetAllFiles(w http.ResponseWriter, r *http.Request) {
+*/
+func (handler *Handler) GetAllFiles(c echo.Context) error {
 	handler.logger.Info("Retreiving all images....")
 
-	searchParams := r.URL.Query().Get("q")
+	searchParams := c.QueryParam("q")
 	handler.logger.Infow("Search parameters passed in",
 		"PARAMS", searchParams,
 	)
@@ -270,19 +271,15 @@ func (handler *Handler) GetAllFiles(w http.ResponseWriter, r *http.Request) {
 		images = append(images, image)
 	}
 
-	err = json.NewEncoder(w).Encode(images)
-	w.Header().Set("Content-Type", "application/json")
-
 	if len(images) == 0 {
-		err = json.NewEncoder(w).Encode(make([]Image, 0))
+		// Is this needed? Or will 0 automatically be handled?
+		return c.JSON(http.StatusOK, make([]Image, 0))
 	}
 
-	if err != nil {
-		log.Fatal(err)
-	}
-
+	return c.JSON(http.StatusOK, images)
 }
 
+/*
 func (handler *Handler) DeleteImage(w http.ResponseWriter, r *http.Request) {
 	handler.logger.Info("Deleting image....")
 

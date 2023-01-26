@@ -59,16 +59,6 @@ func main() {
 		sugar.Infof("Failed to fetch URL: %s", url)
 	*/
 
-	// cors := cors.New(cors.Options{
-	// 	AllowedOrigins: []string{"*"},
-	// 	AllowedMethods: []string{
-	// 		http.MethodPost,
-	// 		http.MethodGet,
-	// 	},
-	// 	AllowedHeaders:   []string{"*"},
-	// 	AllowCredentials: false,
-	// })
-
 	e := echo.New()
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
@@ -83,29 +73,13 @@ func main() {
 
 	/*
 
-		r := mux.NewRouter()
 
-		cors := cors.New(cors.Options{
-			AllowedOrigins: []string{"*"},
-			AllowedMethods: []string{
-				http.MethodPost,
-				http.MethodGet,
-			},
-			AllowedHeaders:   []string{"*"},
-			AllowCredentials: false,
-		})
 
 		r.HandleFunc("/uploadfile/", envHandler.UploadFileHandler).Methods("POST")
-		r.HandleFunc("/images/", envHandler.GetAllFiles).Methods("GET")
 		r.HandleFunc("/images/{id}", envHandler.DeleteImage).Methods("DELETE")
 		r.HandleFunc("/download_csv/", envHandler.DownloadCSV).Methods("GET")
 		r.HandleFunc("/download_image/", envHandler.DownloadImage).Methods("GET")
-		r.HandleFunc("/file/", FileHandler)
-		r.HandleFunc("/hello", HelloWorld)
 
-		handler := cors.Handler(r)
-
-		log.Fatal(http.ListenAndServe(":8000", handler))
 	*/
 }
 
@@ -318,29 +292,6 @@ func (handler *Handler) DeleteImage(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func FileHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodPost {
-
-		var fileInfo FileInfo
-
-		err := json.NewDecoder(r.Body).Decode(&fileInfo)
-
-		if err != nil {
-			log.Fatal(err.Error())
-		}
-
-		fmt.Printf("FILE NAME IS %s\n", fileInfo.Name)
-
-		// fmt.Println("RECEIVING A POST REQUEST")
-		// fmt.Printf("BODY %v\n", r.Body)
-		// bodyBytes, _ := ioutil.ReadAll(r.Body)
-		// bodyString := string(bodyBytes)
-		// fmt.Print(bodyString)
-	} else {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-}
 
 // send csv to client to automatically download
 // https://medium.com/wesionary-team/create-csv-file-in-go-server-and-download-from-reactjs-4f22f148290b

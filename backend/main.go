@@ -12,19 +12,14 @@ package main
 
 import (
 	"database/sql"
-	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
-	"path/filepath"
-	"time"
 
-	"github.com/gorilla/mux"
+	"github.com/labstack/echo/v4"
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/rs/cors"
 	"go.uber.org/zap"
 )
 
@@ -48,11 +43,11 @@ func main() {
 	db := initializeDatabase()
 	defer db.Close()
 
-	logger, _ := zap.NewProduction()
-	defer logger.Sync() // flushes buffer, if any
-	sugar := logger.Sugar()
+	// logger, _ := zap.NewProduction()
+	// defer logger.Sync() // flushes buffer, if any
+	// sugar := logger.Sugar()
 
-	envHandler := &Handler{logger: sugar, dbConn: db}
+	// envHandler := &Handler{logger: sugar, dbConn: db}
 	/*
 		sugar.Infow("failed to fetch URL",
 			// Structured context as loosely typed key-value pairs.
@@ -63,29 +58,38 @@ func main() {
 		sugar.Infof("Failed to fetch URL: %s", url)
 	*/
 
-	r := mux.NewRouter()
+	e := echo.New()
 
-	cors := cors.New(cors.Options{
-		AllowedOrigins: []string{"*"},
-		AllowedMethods: []string{
-			http.MethodPost,
-			http.MethodGet,
-		},
-		AllowedHeaders:   []string{"*"},
-		AllowCredentials: false,
-	})
+	e.GET("/hello", HelloWorld)
 
-	r.HandleFunc("/uploadfile/", envHandler.UploadFileHandler).Methods("POST")
-	r.HandleFunc("/images/", envHandler.GetAllFiles).Methods("GET")
-	r.HandleFunc("/images/{id}", envHandler.DeleteImage).Methods("DELETE")
-	r.HandleFunc("/download_csv/", envHandler.DownloadCSV).Methods("GET")
-	r.HandleFunc("/download_image/", envHandler.DownloadImage).Methods("GET")
-	r.HandleFunc("/file/", FileHandler)
-	r.HandleFunc("/hello", HelloWorld)
+	e.Logger.Fatal(e.Start(":8000"))
 
-	handler := cors.Handler(r)
+	/*
 
-	log.Fatal(http.ListenAndServe(":8000", handler))
+		r := mux.NewRouter()
+
+		cors := cors.New(cors.Options{
+			AllowedOrigins: []string{"*"},
+			AllowedMethods: []string{
+				http.MethodPost,
+				http.MethodGet,
+			},
+			AllowedHeaders:   []string{"*"},
+			AllowCredentials: false,
+		})
+
+		r.HandleFunc("/uploadfile/", envHandler.UploadFileHandler).Methods("POST")
+		r.HandleFunc("/images/", envHandler.GetAllFiles).Methods("GET")
+		r.HandleFunc("/images/{id}", envHandler.DeleteImage).Methods("DELETE")
+		r.HandleFunc("/download_csv/", envHandler.DownloadCSV).Methods("GET")
+		r.HandleFunc("/download_image/", envHandler.DownloadImage).Methods("GET")
+		r.HandleFunc("/file/", FileHandler)
+		r.HandleFunc("/hello", HelloWorld)
+
+		handler := cors.Handler(r)
+
+		log.Fatal(http.ListenAndServe(":8000", handler))
+	*/
 }
 
 func initializeDatabase() *sql.DB {
@@ -125,6 +129,7 @@ func initializeDatabase() *sql.DB {
 	return db
 }
 
+/*
 const MAX_UPLOAD_SIZE = 1024 * 1024 // 1 MB
 
 func (handler *Handler) UploadFileHandler(w http.ResponseWriter, r *http.Request) {
@@ -369,8 +374,10 @@ func (handler *Handler) DownloadImage(w http.ResponseWriter, r *http.Request) {
 func Login() {
 
 }
-
-func HelloWorld(w http.ResponseWriter, req *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.Write([]byte(`{"status":"OK"}`))
+*/
+func HelloWorld(c echo.Context) error {
+	// w.Header().Set("Content-Type", "application/json")
+	// w.Write([]byte(`{"status":"OK"}`))
+	data := []byte(`{"status":"OK!"}`)
+	return c.Blob(http.StatusOK, "application/json", data)
 }

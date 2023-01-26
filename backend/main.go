@@ -19,6 +19,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -151,10 +152,14 @@ func (handler *Handler) UploadFileHandler(c echo.Context) error {
 
 	// Create a new file in the uploads directory
 	filePath := ""
+	fileNameToInsertIntoDatabase := ""
 	if c.FormValue("file_name") != "" {
 		filePath = fmt.Sprintf("./uploads/%s%s", c.FormValue("file_name"), filepath.Ext(file.Filename))
+		fileNameToInsertIntoDatabase = c.FormValue("file_name")
 	} else {
-		filePath = fmt.Sprintf("./uploads/%d%s", time.Now().UnixNano(), filepath.Ext(file.Filename))
+		currentUnixTime := time.Now().UnixNano()
+		fileNameToInsertIntoDatabase = strconv.FormatInt(currentUnixTime, 10)
+		filePath = fmt.Sprintf("./uploads/%d%s", currentUnixTime, filepath.Ext(file.Filename))
 	}
 
 	dst, err := os.Create(filePath)
@@ -177,7 +182,7 @@ func (handler *Handler) UploadFileHandler(c echo.Context) error {
 		"SQL", query,
 	)
 
-	_, err = handler.dbConn.Exec(query, c.FormValue("file_name"), filePath)
+	_, err = handler.dbConn.Exec(query, fileNameToInsertIntoDatabase, filePath)
 
 	if err != nil {
 		log.Fatal(err.Error())

@@ -77,12 +77,10 @@ func main() {
 	e.GET("/hello", HelloWorld)
 	e.GET("/images/", envHandler.GetAllFiles)
 	e.POST("/uploadfile/", envHandler.UploadFileHandler, middleware.BodyLimit("1M")) // Body limit middleware sets the maximum allowed size for a request body, if the size exceeds the configured limit, it sends “413 - Request Entity Too Large” response. The body limit is determined based on both Content-Length request header and actual content read, which makes it super secure
-
+	e.DELETE("/images/:id", envHandler.DeleteImage)
 	e.Logger.Fatal(e.Start(":8000"))
 
 	/*
-
-		r.HandleFunc("/images/{id}", envHandler.DeleteImage).Methods("DELETE")
 		r.HandleFunc("/download_csv/", envHandler.DownloadCSV).Methods("GET")
 		r.HandleFunc("/download_image/", envHandler.DownloadImage).Methods("GET")
 
@@ -266,30 +264,28 @@ func (handler *Handler) GetAllFiles(c echo.Context) error {
 	return c.JSON(http.StatusOK, images)
 }
 
-/*
-func (handler *Handler) DeleteImage(w http.ResponseWriter, r *http.Request) {
+func (handler *Handler) DeleteImage(c echo.Context) error {
 	handler.logger.Info("Deleting image....")
 
-	vars := mux.Vars(r)
+	id := c.Param("id")
 
-	query := "DELETE FROM websites WHERE id = ?"
+	query := "DELETE FROM images WHERE id = ?"
 
 	handler.logger.Infow("Running SQL statement",
-		"id of image delete", vars["id"],
+		"id of image delete", id,
 		"SQL", query,
 	)
 
-	_, err := handler.dbConn.Exec(vars["id"])
+	_, err := handler.dbConn.Exec(query, id)
 
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-
+	return c.NoContent(http.StatusNoContent)
 }
 
-
+/*
 // send csv to client to automatically download
 // https://medium.com/wesionary-team/create-csv-file-in-go-server-and-download-from-reactjs-4f22f148290b
 // https://stackoverflow.com/questions/68162651/go-how-to-response-csv-file

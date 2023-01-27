@@ -23,7 +23,7 @@ jobs:
       - name: Calculate Test Coverage
         working-directory: backend
         run: |
-          COVERAGE='go test -cover ./... | grep coverage: | awk '{print substr($5, 1, length($5)-3)}'`
+          COVERAGE=`go test -cover ./... | grep coverage: | awk '{print substr($5, 1, length($5)-3)}'`
           echo "COVERAGE IS $COVERAGE"
           COVERAGE_VALUE=$((PATH_COVERAGE))
           echo "COVERAGE VALUE IS $COVERAGE_VALUE"

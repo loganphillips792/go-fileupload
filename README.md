@@ -30,3 +30,7 @@ Simple app to practice uploading files in React and GO
 2. If a name is provided, it will save the image with that name + original file extension. If there is no name provided, it will set the name to be the current UNIX timestamp.
 
 ## Through Curl Command
+
+# Downloading files
+
+# Running unit tests

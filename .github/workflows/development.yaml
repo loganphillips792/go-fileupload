@@ -28,9 +28,12 @@ jobs:
           COVERAGE_VALUE=$((PATH_COVERAGE))
           echo "COVERAGE VALUE IS $COVERAGE_VALUE"
 
-          if test $COVERAGE_VALUE -lt 90; then
+          if [[ $COVERAGE_VALUE -lt 90 ]]
+          then
             echo "TEST COVERAGE THRESHOLD (greater than 90%) NOT MET: Coverage is $PATH_COVERAGE"
             exit 0
+          else
+            echo "COVERAGE IS ABOVE THRESHOLD, CONTINUING"
           fi
           done
           echo "Test Coverage Complete"

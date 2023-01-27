@@ -20,6 +20,18 @@ jobs:
       - name: Build
         working-directory: backend
         run: go build -v ./...
-      - name: Test
+      - name: Calculate Test Coverage
         working-directory: backend
-        run: go test -v ./...
+        run: |
+          COVERAGE='go test -cover ./... | grep coverage: | awk '{print substr($5, 1, length($5)-3)}'`
+          echo "COVERAGE IS $COVERAGE"
+          COVERAGE_VALUE=$((PATH_COVERAGE))
+          echo "COVERAGE VALUE IS $COVERAGE_VALUE"
+
+          if test $COVERAGE_VALUE" -lt 90; then
+            echo "TEST COVERAGE THRESHOLD (greater than 90%) NOT MET: Coverage is $PATH_COVERAGE"
+            exit 1
+          fi
+          done
+          echo "Test Coverage Complete"
+        

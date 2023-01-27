@@ -276,10 +276,16 @@ func (handler *Handler) DeleteImage(c echo.Context) error {
 		"SQL", query,
 	)
 
-	_, err := handler.dbConn.Exec(query, id)
+	resp, err := handler.dbConn.Exec(query, id)
 
 	if err != nil {
 		log.Fatal(err.Error())
+	}
+
+	rowsDeleted, _ := resp.RowsAffected()
+
+	if rowsDeleted == 0 {
+		c.Blob(http.StatusNotFound, "application/json", []byte(`{"response":"image not found"}`))
 	}
 
 	return c.NoContent(http.StatusNoContent)

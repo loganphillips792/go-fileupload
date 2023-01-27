@@ -34,3 +34,6 @@ Simple app to practice uploading files in React and GO
 # Downloading files
 
 # Running unit tests
+
+1. go test -coverprofile=coverage.out
+2. go tool cover -html=coverage.out

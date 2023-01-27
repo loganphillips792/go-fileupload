@@ -1,2 +1,9 @@
+# database files
 data.db
+
+# testing
 coverage.out
+
+# file types
+uploads/*.jpeg
+

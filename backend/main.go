@@ -12,7 +12,6 @@ package main
 
 import (
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -20,11 +19,12 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"time"
 
-	"github.com/gorilla/mux"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/rs/cors"
 	"go.uber.org/zap"
 )
 
@@ -63,29 +63,24 @@ func main() {
 		sugar.Infof("Failed to fetch URL: %s", url)
 	*/
 
-	r := mux.NewRouter()
+	e := echo.New()
 
-	cors := cors.New(cors.Options{
-		AllowedOrigins: []string{"*"},
-		AllowedMethods: []string{
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"*"},
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
+		AllowMethods: []string{
 			http.MethodPost,
 			http.MethodGet,
 		},
-		AllowedHeaders:   []string{"*"},
-		AllowCredentials: false,
-	})
+	}))
 
-	r.HandleFunc("/uploadfile/", envHandler.UploadFileHandler).Methods("POST")
-	r.HandleFunc("/images/", envHandler.GetAllFiles).Methods("GET")
-	r.HandleFunc("/images/{id}", envHandler.DeleteImage).Methods("DELETE")
-	r.HandleFunc("/download_csv/", envHandler.DownloadCSV).Methods("GET")
-	r.HandleFunc("/download_image/", envHandler.DownloadImage).Methods("GET")
-	r.HandleFunc("/file/", FileHandler)
-	r.HandleFunc("/hello", HelloWorld)
-
-	handler := cors.Handler(r)
-
-	log.Fatal(http.ListenAndServe(":8000", handler))
+	e.GET("/hello", HelloWorld)
+	e.GET("/images/", envHandler.GetAllFiles)
+	e.POST("/uploadfile/", envHandler.UploadFileHandler, middleware.BodyLimit("1M")) // Body limit middleware sets the maximum allowed size for a request body, if the size exceeds the configured limit, it sends “413 - Request Entity Too Large” response. The body limit is determined based on both Content-Length request header and actual content read, which makes it super secure
+	e.DELETE("/images/:id", envHandler.DeleteImage)
+	e.GET("/download_image/", envHandler.DownloadImage)
+	e.GET("/download_csv/", envHandler.DownloadCSV)
+	e.Logger.Fatal(e.Start(":8000"))
 }
 
 func initializeDatabase() *sql.DB {
@@ -125,24 +120,71 @@ func initializeDatabase() *sql.DB {
 	return db
 }
 
-const MAX_UPLOAD_SIZE = 1024 * 1024 // 1 MB
+func (handler *Handler) UploadFileHandler(c echo.Context) error {
+	handler.logger.Infof("Content Length %d ", c.Request().ContentLength)
 
-func (handler *Handler) UploadFileHandler(w http.ResponseWriter, r *http.Request) {
-	handler.logger.Infof("Content Length %d ", r.ContentLength)
+	file, err := c.FormFile("file")
 
-	r.Body = http.MaxBytesReader(w, r.Body, MAX_UPLOAD_SIZE)
-	if err := r.ParseMultipartForm(MAX_UPLOAD_SIZE); err != nil {
-		http.Error(w, "The uploaded file is too big. Please choose an file that's less than 1MB in size", http.StatusBadRequest)
-		return
-	}
-
-	file, fileHeader, err := r.FormFile("file")
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
-	defer file.Close()
+	src, err := file.Open()
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	defer src.Close()
+
+	// Create the uploads fodler if it doesn't already exist
+	err = os.MkdirAll("./uploads", os.ModePerm)
+
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	handler.logger.Infof("File name from user %s ", c.FormValue("file_name"))
+
+	// Create a new file in the uploads directory
+	filePath := ""
+	fileNameToInsertIntoDatabase := ""
+	if c.FormValue("file_name") != "" {
+		filePath = fmt.Sprintf("./uploads/%s%s", c.FormValue("file_name"), filepath.Ext(file.Filename))
+		fileNameToInsertIntoDatabase = c.FormValue("file_name")
+	} else {
+		currentUnixTime := time.Now().UnixNano()
+		fileNameToInsertIntoDatabase = strconv.FormatInt(currentUnixTime, 10)
+		filePath = fmt.Sprintf("./uploads/%d%s", currentUnixTime, filepath.Ext(file.Filename))
+	}
+
+	dst, err := os.Create(filePath)
+	fmt.Println(filePath)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	defer dst.Close()
+
+	// Copy the uploaded file to the filesystem at the specified destination
+	if _, err = io.Copy(dst, src); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	// file save was successsful
+	query := "INSERT INTO images (name, file_path) VALUES (?, ?)"
+
+	handler.logger.Infow("Running SQL statement",
+		"SQL", query,
+	)
+
+	_, err = handler.dbConn.Exec(query, fileNameToInsertIntoDatabase, filePath)
+
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	changeImageToBlackAndWhite()
+
+	return c.Blob(http.StatusOK, "application/json", []byte(`{"response":"Upload Successful!!"}`))
 
 	// check that the file is only image file
 	// https://freshman.tech/file-upload-golang/#restrict-the-type-of-the-uploaded-file
@@ -163,61 +205,6 @@ func (handler *Handler) UploadFileHandler(w http.ResponseWriter, r *http.Request
 
 	// handler.logger.Infof("File type is %s ", filetype)
 
-	// Create the uploads fodler if it doesn't already exist
-	err = os.MkdirAll("./uploads", os.ModePerm)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	handler.logger.Infof("File name from user %s ", r.Form.Get("file_name"))
-
-	// Create a new file in the uploads directory
-	filePath := ""
-	if r.Form.Get("file_name") != "" {
-		filePath = fmt.Sprintf("./uploads/%s%s", r.Form.Get("file_name"), filepath.Ext(fileHeader.Filename))
-	} else {
-		filePath = fmt.Sprintf("./uploads/%d%s", time.Now().UnixNano(), filepath.Ext(fileHeader.Filename))
-	}
-	// dst, err := os.Create(filePath)
-	// file_path := fmt.Sprintf("./uploads/%d%s", time.Now().UnixNano(), filepath.Ext(fileHeader.Filename))
-	dst, err := os.Create(filePath)
-	fmt.Println(filePath)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	defer dst.Close()
-
-	// file save was successsful
-	query := "INSERT INTO images (name, file_path) VALUES (?, ?)"
-
-	handler.logger.Infow("Running SQL statement",
-		"SQL", query,
-	)
-
-	_, err = handler.dbConn.Exec(query, r.Form.Get("file_name"), filePath)
-
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-
-	// Copy the uploaded file to the filesystem
-	// at the specified destination
-	_, err = io.Copy(dst, file)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	fmt.Fprintf(w, "Upload successful")
-
-	w.Write([]byte(`{"response":"Upload successful"}`))
-
-	changeImageToBlackAndWhite()
-
 }
 
 // When user successfully uploads image, they can click "convert to black and white". The new image will
@@ -227,10 +214,10 @@ func changeImageToBlackAndWhite() {
 	fmt.Println("Converting image to black and white...")
 }
 
-func (handler *Handler) GetAllFiles(w http.ResponseWriter, r *http.Request) {
+func (handler *Handler) GetAllFiles(c echo.Context) error {
 	handler.logger.Info("Retreiving all images....")
 
-	searchParams := r.URL.Query().Get("q")
+	searchParams := c.QueryParam("q")
 	handler.logger.Infow("Search parameters passed in",
 		"PARAMS", searchParams,
 	)
@@ -265,100 +252,55 @@ func (handler *Handler) GetAllFiles(w http.ResponseWriter, r *http.Request) {
 		images = append(images, image)
 	}
 
-	err = json.NewEncoder(w).Encode(images)
-	w.Header().Set("Content-Type", "application/json")
-
 	if len(images) == 0 {
-		err = json.NewEncoder(w).Encode(make([]Image, 0))
+		// Is this needed? Or will 0 automatically be handled?
+		return c.JSON(http.StatusOK, make([]Image, 0))
 	}
 
-	if err != nil {
-		log.Fatal(err)
-	}
-
+	return c.JSON(http.StatusOK, images)
 }
 
-func (handler *Handler) DeleteImage(w http.ResponseWriter, r *http.Request) {
+func (handler *Handler) DeleteImage(c echo.Context) error {
 	handler.logger.Info("Deleting image....")
 
-	vars := mux.Vars(r)
+	id := c.Param("id")
 
-	query := "DELETE FROM websites WHERE id = ?"
+	query := "DELETE FROM images WHERE id = ?"
 
 	handler.logger.Infow("Running SQL statement",
-		"id of image delete", vars["id"],
+		"id of image delete", id,
 		"SQL", query,
 	)
 
-	_, err := handler.dbConn.Exec(vars["id"])
+	resp, err := handler.dbConn.Exec(query, id)
 
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	rowsDeleted, _ := resp.RowsAffected()
 
+	if rowsDeleted == 0 {
+		c.Blob(http.StatusNotFound, "application/json", []byte(`{"response":"image not found"}`))
+	}
+
+	return c.NoContent(http.StatusNoContent)
 }
 
-func FileHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodPost {
-
-		var fileInfo FileInfo
-
-		err := json.NewDecoder(r.Body).Decode(&fileInfo)
-
-		if err != nil {
-			log.Fatal(err.Error())
-		}
-
-		fmt.Printf("FILE NAME IS %s\n", fileInfo.Name)
-
-		// fmt.Println("RECEIVING A POST REQUEST")
-		// fmt.Printf("BODY %v\n", r.Body)
-		// bodyBytes, _ := ioutil.ReadAll(r.Body)
-		// bodyString := string(bodyBytes)
-		// fmt.Print(bodyString)
-	} else {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
+// https://github.com/labstack/echo/blob/v3.3.10/context.go#L542
+func (handler *Handler) DownloadImage(c echo.Context) error {
+	return c.Attachment("./data/IMG_7015.jpg", "download.jpg")
 }
 
 // send csv to client to automatically download
 // https://medium.com/wesionary-team/create-csv-file-in-go-server-and-download-from-reactjs-4f22f148290b
 // https://stackoverflow.com/questions/68162651/go-how-to-response-csv-file
 // https://medium.com/wesionary-team/create-csv-file-in-go-server-and-download-from-reactjs-4f22f148290b
-func (handler *Handler) DownloadCSV(w http.ResponseWriter, r *http.Request) {
-	// open file
-	f, err := os.Open("./data/airtravel.csv")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// remember to close the file at the end of the program
-	defer f.Close()
-
-	w.Header().Add("Content-Disposition", `attachment; filename="test.csv"`)
-	http.ServeFile(w, r, "./data/airtravel.csv")
-
-	//io.Copy(w, f)
+func (handler *Handler) DownloadCSV(c echo.Context) error {
+	return c.Attachment("./data/airtravel.csv", "download.csv")
 }
 
-func (handler *Handler) DownloadImage(w http.ResponseWriter, r *http.Request) {
-	// open file
-	f, err := os.Open("./data/IMG_7015.jpg")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// remember to close the file at the end of the program
-	defer f.Close()
-
-	w.Header().Add("Content-Disposition", `attachment; filename="image.jpeg"`)
-	http.ServeFile(w, r, "./data/IMG_7015.jpg")
-
-	//io.Copy(w, f)
-}
+/*
 
 // https://www.reddit.com/r/reactjs/comments/5xgdzh/how_to_correctly_store_user_information/
 // https://www.reddit.com/r/reactjs/comments/gek8as/recommended_approach_to_check_if_user_is/
@@ -369,8 +311,10 @@ func (handler *Handler) DownloadImage(w http.ResponseWriter, r *http.Request) {
 func Login() {
 
 }
-
-func HelloWorld(w http.ResponseWriter, req *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.Write([]byte(`{"status":"OK"}`))
+*/
+func HelloWorld(c echo.Context) error {
+	// w.Header().Set("Content-Type", "application/json")
+	// w.Write([]byte(`{"status":"OK"}`))
+	data := []byte(`{"status":"OK!"}`)
+	return c.Blob(http.StatusOK, "application/json", data)
 }

@@ -19,8 +19,6 @@ jobs:
           go-version: 1.18
       
       - name: Build
-        run: |
-          echo "$(ls)"
-        # run: go build -v ./...
+        run: go build -v backend
       - name: Test
         run: go test -v ./...

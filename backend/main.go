@@ -78,11 +78,12 @@ func main() {
 	e.GET("/images/", envHandler.GetAllFiles)
 	e.POST("/uploadfile/", envHandler.UploadFileHandler, middleware.BodyLimit("1M")) // Body limit middleware sets the maximum allowed size for a request body, if the size exceeds the configured limit, it sends “413 - Request Entity Too Large” response. The body limit is determined based on both Content-Length request header and actual content read, which makes it super secure
 	e.DELETE("/images/:id", envHandler.DeleteImage)
+	e.GET("/download_image/", envHandler.DownloadImage)
+
 	e.Logger.Fatal(e.Start(":8000"))
 
 	/*
 		r.HandleFunc("/download_csv/", envHandler.DownloadCSV).Methods("GET")
-		r.HandleFunc("/download_image/", envHandler.DownloadImage).Methods("GET")
 
 	*/
 }
@@ -291,6 +292,11 @@ func (handler *Handler) DeleteImage(c echo.Context) error {
 	return c.NoContent(http.StatusNoContent)
 }
 
+// https://github.com/labstack/echo/blob/v3.3.10/context.go#L542
+func (handler *Handler) DownloadImage(c echo.Context) error {
+	return c.Attachment("./data/IMG_7015.jpg", "download.jpg")
+}
+
 /*
 // send csv to client to automatically download
 // https://medium.com/wesionary-team/create-csv-file-in-go-server-and-download-from-reactjs-4f22f148290b
@@ -312,21 +318,7 @@ func (handler *Handler) DownloadCSV(w http.ResponseWriter, r *http.Request) {
 	//io.Copy(w, f)
 }
 
-func (handler *Handler) DownloadImage(w http.ResponseWriter, r *http.Request) {
-	// open file
-	f, err := os.Open("./data/IMG_7015.jpg")
-	if err != nil {
-		log.Fatal(err)
-	}
 
-	// remember to close the file at the end of the program
-	defer f.Close()
-
-	w.Header().Add("Content-Disposition", `attachment; filename="image.jpeg"`)
-	http.ServeFile(w, r, "./data/IMG_7015.jpg")
-
-	//io.Copy(w, f)
-}
 
 // https://www.reddit.com/r/reactjs/comments/5xgdzh/how_to_correctly_store_user_information/
 // https://www.reddit.com/r/reactjs/comments/gek8as/recommended_approach_to_check_if_user_is/

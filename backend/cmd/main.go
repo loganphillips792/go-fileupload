@@ -20,14 +20,11 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/loganphillips792/fileupload/api"
+
 	_ "github.com/mattn/go-sqlite3"
 	"go.uber.org/zap"
 )
-
-type Handler struct {
-	logger *zap.SugaredLogger
-	dbConn *sql.DB
-}
 
 func main() {
 
@@ -39,12 +36,12 @@ func main() {
 	err := logger.Sync() // flushes buffer, if any
 	// for linting
 	if err != nil {
-		log.Fatal("Error when encoding json")
+		log.Print("Error when encoding json")
 	}
 
 	sugar := logger.Sugar()
 
-	envHandler := &Handler{logger: sugar, dbConn: db}
+	envHandler := &api.Handler{Logger: sugar, DbConn: db}
 	/*
 		sugar.Infow("failed to fetch URL",
 			// Structured context as loosely typed key-value pairs.
@@ -66,7 +63,7 @@ func main() {
 		},
 	}))
 
-	e.GET("/hello", HelloWorld)
+	e.GET("/hello", api.HelloWorld)
 	e.GET("/images/", envHandler.GetAllFiles)
 	e.POST("/uploadfile/", envHandler.UploadFileHandler, middleware.BodyLimit("1M")) // Body limit middleware sets the maximum allowed size for a request body, if the size exceeds the configured limit, it sends “413 - Request Entity Too Large” response. The body limit is determined based on both Content-Length request header and actual content read, which makes it super secure
 	e.DELETE("/images/:id", envHandler.DeleteImage)
@@ -78,7 +75,7 @@ func main() {
 func initializeDatabase() *sql.DB {
 	log.Print("Initializing SQL Lite database...")
 	// TODO: only create if it doesn't exist
-	file, err := os.Create("data.db")
+	file, err := os.Create("../data.db")
 
 	if err != nil {
 		log.Fatal(err.Error())
@@ -86,7 +83,7 @@ func initializeDatabase() *sql.DB {
 
 	file.Close()
 
-	db, err := sql.Open("sqlite3", "./data.db")
+	db, err := sql.Open("sqlite3", "../data.db")
 
 	if err != nil {
 		log.Fatal(err.Error())
@@ -94,7 +91,7 @@ func initializeDatabase() *sql.DB {
 
 	// run sql files
 
-	c, err := ioutil.ReadFile("./script.sql")
+	c, err := ioutil.ReadFile("../script.sql")
 
 	if err != nil {
 		log.Fatal(err.Error())

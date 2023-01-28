@@ -10,11 +10,11 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 )
 
 func (handler *Handler) UploadFileHandler(c echo.Context) error {
-	handler.logger.Infof("Content Length %d ", c.Request().ContentLength)
+	handler.Logger.Infof("Content Length %d ", c.Request().ContentLength)
 
 	file, err := c.FormFile("file")
 
@@ -29,24 +29,24 @@ func (handler *Handler) UploadFileHandler(c echo.Context) error {
 	defer src.Close()
 
 	// Create the uploads fodler if it doesn't already exist
-	err = os.MkdirAll("./uploads", os.ModePerm)
+	err = os.MkdirAll("../uploads", os.ModePerm)
 
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
-	handler.logger.Infof("File name from user %s ", c.FormValue("file_name"))
+	handler.Logger.Infof("File name from user %s ", c.FormValue("file_name"))
 
 	// Create a new file in the uploads directory
 	filePath := ""
 	fileNameToInsertIntoDatabase := ""
 	if c.FormValue("file_name") != "" {
-		filePath = fmt.Sprintf("./uploads/%s%s", c.FormValue("file_name"), filepath.Ext(file.Filename))
+		filePath = fmt.Sprintf("../uploads/%s%s", c.FormValue("file_name"), filepath.Ext(file.Filename))
 		fileNameToInsertIntoDatabase = c.FormValue("file_name")
 	} else {
 		currentUnixTime := time.Now().UnixNano()
 		fileNameToInsertIntoDatabase = strconv.FormatInt(currentUnixTime, 10)
-		filePath = fmt.Sprintf("./uploads/%d%s", currentUnixTime, filepath.Ext(file.Filename))
+		filePath = fmt.Sprintf("../uploads/%d%s", currentUnixTime, filepath.Ext(file.Filename))
 	}
 
 	dst, err := os.Create(filePath)
@@ -65,11 +65,11 @@ func (handler *Handler) UploadFileHandler(c echo.Context) error {
 	// file save was successsful
 	query := "INSERT INTO images (name, file_path) VALUES (?, ?)"
 
-	handler.logger.Infow("Running SQL statement",
+	handler.Logger.Infow("Running SQL statement",
 		"SQL", query,
 	)
 
-	_, err = handler.dbConn.Exec(query, fileNameToInsertIntoDatabase, filePath)
+	_, err = handler.DbConn.Exec(query, fileNameToInsertIntoDatabase, filePath)
 
 	if err != nil {
 		log.Fatal(err.Error())
@@ -108,10 +108,10 @@ func changeImageToBlackAndWhite() {
 }
 
 func (handler *Handler) GetAllFiles(c echo.Context) error {
-	handler.logger.Info("Retreiving all images....")
+	handler.Logger.Info("Retreiving all images....")
 
 	searchParams := c.QueryParam("q")
-	handler.logger.Infow("Search parameters passed in",
+	handler.Logger.Infow("Search parameters passed in",
 		"PARAMS", searchParams,
 	)
 
@@ -121,11 +121,11 @@ func (handler *Handler) GetAllFiles(c echo.Context) error {
 		query += " LIKE name "
 	}
 
-	handler.logger.Infow("Running SQL statement",
+	handler.Logger.Infow("Running SQL statement",
 		"SQL", query,
 	)
 
-	rows, err := handler.dbConn.Query(query)
+	rows, err := handler.DbConn.Query(query)
 
 	if err != nil {
 		log.Fatal(err)
@@ -154,18 +154,18 @@ func (handler *Handler) GetAllFiles(c echo.Context) error {
 }
 
 func (handler *Handler) DeleteImage(c echo.Context) error {
-	handler.logger.Info("Deleting image....")
+	handler.Logger.Info("Deleting image....")
 
 	id := c.Param("id")
 
 	query := "DELETE FROM images WHERE id = ?"
 
-	handler.logger.Infow("Running SQL statement",
+	handler.Logger.Infow("Running SQL statement",
 		"id of image delete", id,
 		"SQL", query,
 	)
 
-	resp, err := handler.dbConn.Exec(query, id)
+	resp, err := handler.DbConn.Exec(query, id)
 
 	if err != nil {
 		log.Fatal(err.Error())
@@ -187,7 +187,7 @@ func (handler *Handler) DeleteImage(c echo.Context) error {
 
 // https://github.com/labstack/echo/blob/v3.3.10/context.go#L542
 func (handler *Handler) DownloadImage(c echo.Context) error {
-	return c.Attachment("./data/IMG_7015.jpg", "download.jpg")
+	return c.Attachment("../data/IMG_7015.jpg", "download.jpg")
 }
 
 // send csv to client to automatically download
@@ -195,7 +195,7 @@ func (handler *Handler) DownloadImage(c echo.Context) error {
 // https://stackoverflow.com/questions/68162651/go-how-to-response-csv-file
 // https://medium.com/wesionary-team/create-csv-file-in-go-server-and-download-from-reactjs-4f22f148290b
 func (handler *Handler) DownloadCSV(c echo.Context) error {
-	return c.Attachment("./data/airtravel.csv", "download.csv")
+	return c.Attachment("../data/airtravel.csv", "download.csv")
 }
 
 /*

@@ -1,5 +1,11 @@
 Simple app to practice uploading files in React and GO
 
+# To Do
+
+- Convert to Vite
+- React Drag and Drop file upload
+- Manitine components
+
 # Running the Application
 
 ## Frontend

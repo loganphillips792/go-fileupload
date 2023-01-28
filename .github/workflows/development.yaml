@@ -56,7 +56,6 @@ jobs:
           else
             echo "COVERAGE IS ABOVE THRESHOLD, CONTINUING"
           fi
-          done
           echo "Test Coverage Complete"
   Test_Frontend:
     runs-on: ubuntu-latest

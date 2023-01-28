@@ -20,21 +20,47 @@ jobs:
       - name: Build
         working-directory: backend
         run: go build -v ./...
-      - name: Calculate Test Coverage
+      - name: Lint
         working-directory: backend
         run: |
+          # binary will be $(go env GOPATH)/bin/golangci-lint
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.45.2
+          golangci-lint --version
+          golangci-lint run ./...
+      - name: Vet
+        working-directory: backend
+        run: |
+          go vet ./...
+      - name: Test
+        working-directory: backend
+        run: |
+          go test -v -coverprofile coverage.out ./...
+          go tool cover -func coverage.out
+      - name: Calculate Test Coverage
+        env:
+          TESTCOVERAGE_THRESHOLD: -1
+        working-directory: backend
+        run: |
+          echo "Quality Gate: checking test coverage is above threshold ..."
+          echo "Threshold             : $TESTCOVERAGE_THRESHOLD %"
           COVERAGE=`go test -cover ./... | grep coverage: | awk '{print substr($5, 1, length($5)-3)}'`
           echo "COVERAGE IS $COVERAGE"
           COVERAGE_VALUE=$((PATH_COVERAGE))
           echo "COVERAGE VALUE IS $COVERAGE_VALUE"
 
-          if [[ $COVERAGE_VALUE -lt 90 ]]
+          if [[ $COVERAGE_VALUE -lt $TESTCOVERAGE_THRESHOLD ]]
           then
             echo "TEST COVERAGE THRESHOLD (greater than 90%) NOT MET: Coverage is $PATH_COVERAGE"
-            exit 0
+            echo "Current test coverage is below threshold. Please add more unit tests or adjust threshold to a lower value."
+            exit 1
           else
             echo "COVERAGE IS ABOVE THRESHOLD, CONTINUING"
           fi
           done
           echo "Test Coverage Complete"
+  Test_Frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run frontend flow
+        run: echo "FRONTEND RUNNING"
         

@@ -33,10 +33,6 @@ type Handler struct {
 	dbConn *sql.DB
 }
 
-type FileInfo struct {
-	Name string
-}
-
 type Image struct {
 	Id       int    `json:"id"`
 	Name     string `json:"name"`
@@ -49,7 +45,13 @@ func main() {
 	defer db.Close()
 
 	logger, _ := zap.NewProduction()
-	defer logger.Sync() // flushes buffer, if any
+	//logger.Sync() // flushes buffer, if any
+	err := logger.Sync() // flushes buffer, if any
+	// for linting
+	if err != nil {
+		log.Fatal("Error when encoding json")
+	}
+
 	sugar := logger.Sugar()
 
 	envHandler := &Handler{logger: sugar, dbConn: db}
@@ -281,7 +283,12 @@ func (handler *Handler) DeleteImage(c echo.Context) error {
 	rowsDeleted, _ := resp.RowsAffected()
 
 	if rowsDeleted == 0 {
-		c.Blob(http.StatusNotFound, "application/json", []byte(`{"response":"image not found"}`))
+		err = c.Blob(http.StatusNotFound, "application/json", []byte(`{"response":"image not found"}`))
+
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+
 	}
 
 	return c.NoContent(http.StatusNoContent)

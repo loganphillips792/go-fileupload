@@ -8,7 +8,7 @@ on:
 
 jobs:
   test_backend:
-    name: Test Backend
+    name: Test and Lint Backend
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code

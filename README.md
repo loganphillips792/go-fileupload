@@ -37,3 +37,8 @@ Simple app to practice uploading files in React and GO
 
 1. go test -coverprofile=coverage.out
 2. go tool cover -html=coverage.out
+
+# Run in Docker
+
+1. ```docker build -t getting-started-go --file=build/Dockerfile .```
+2 ```docker run --publish 8080:8080 getting-started-go```

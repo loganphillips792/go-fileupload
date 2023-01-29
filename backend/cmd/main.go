@@ -12,6 +12,7 @@ package main
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -74,11 +75,15 @@ func main() {
 
 func initializeDatabase() *sql.DB {
 	log.Print("Initializing SQL Lite database...")
-	// TODO: only create if it doesn't exist
-	file, err := os.Create("data.db")
+	// TODO: only create and seed database if it doesn't exist
+	file, openFileErr := os.Open("data.db")
 
-	if err != nil {
-		log.Fatal(err.Error())
+	if openFileErr != nil {
+		log.Fatal(openFileErr.Error())
+	}
+
+	if errors.Is(openFileErr, os.ErrNotExist) {
+		file, _ = os.Create("data.db")
 	}
 
 	file.Close()
@@ -91,19 +96,21 @@ func initializeDatabase() *sql.DB {
 
 	// run sql files
 
-	c, err := ioutil.ReadFile("script.sql")
+	if errors.Is(openFileErr, os.ErrNotExist) {
+		c, err := ioutil.ReadFile("script.sql")
 
-	if err != nil {
-		log.Fatal(err.Error())
-	}
+		if err != nil {
+			log.Fatal(err.Error())
+		}
 
-	sql := string(c)
+		sql := string(c)
 
-	_, err = db.Exec(sql)
+		_, err = db.Exec(sql)
 
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 	}
 
 	return db

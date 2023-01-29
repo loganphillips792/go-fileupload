@@ -3,12 +3,18 @@ import './App.css';
 import { useState, useEffect } from 'react';
 import styled from "styled-components";
 import FileList from './FileList';
+import { Button } from '@mantine/core';
+import { FileButton } from '@mantine/core';
+import { IconUpload } from '@tabler/icons';
 
 const Container = styled.div``;
 
+const DownloadButton = styled(Button)``;
+
 function App() {
 
-  const [selectedFile, setSelectedFile] = useState();
+  const [selectedFile, setSelectedFile] = useState(null);
+
   const [isFileSelected, setIsFileSelected] = useState(false);
 
   const [fileNameValue, setFileNameValue] = useState("");
@@ -38,10 +44,10 @@ function App() {
       })
   }, [query]);
 
-  const changeHandler = (event) => {
-    setSelectedFile(event.target.files[0]);
-    setIsFileSelected(true);
-  }
+  // const changeHandler = (event) => {
+  //   setSelectedFile(event.target.files[0]);
+  //   setIsFileSelected(true);
+  // }
 
   const handleSubmission = () => {
     const formData = new FormData();
@@ -110,7 +116,12 @@ function App() {
     <Container>
       <h1>Go file upload</h1>
 
-      <input type="file" name="file" onChange={changeHandler} />
+      {/* <input type="file" name="file" onChange={changeHandler} /> */}
+      
+      <FileButton onChange={setSelectedFile} accept="image/png,image/jpeg">
+          {(props) => <Button {...props}>Upload image</Button>}
+      </FileButton>
+
 
       {isFileSelected ?
         (
@@ -142,7 +153,7 @@ function App() {
 
       <FileList imagesInfo={data} isLoading={isLoading} />      
 
-      <div onClick={handleDownloadCSV}>Download CSV</div>
+      <DownloadButton onClick={handleDownloadCSV}>Download CSV</DownloadButton>
 
     </Container>
   );

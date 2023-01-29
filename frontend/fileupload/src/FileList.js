@@ -9,9 +9,16 @@ const Container = styled.div`
     }
 `;
 
+const ImagesContainer = styled.div`
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5%;
+`
+
+
 const ImageContainer = styled.div`
     display: flex;
-    border: 2px solid red;
+    justify-content: center;
     padding: 1em;
 `;
 
@@ -52,7 +59,8 @@ const FileList = ({imagesInfo, isLoading}) => {
 
             {isLoading && <div>Loading...</div>}
 
-            {/* {Array.isArray(data) && data.length ? data.map(function (image) { */}
+            <ImagesContainer>
+                {/* {Array.isArray(data) && data.length ? data.map(function (image) { */}
             {imagesInfo.length && imagesInfo ? imagesInfo.map(function (image) {
                 return (
                     <ImageContainer>
@@ -67,6 +75,7 @@ const FileList = ({imagesInfo, isLoading}) => {
             }) : <div>Upload a file to see it here....</div>
 
             }
+            </ImagesContainer>
 
         </Container>
     )

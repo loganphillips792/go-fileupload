@@ -75,7 +75,7 @@ func main() {
 func initializeDatabase() *sql.DB {
 	log.Print("Initializing SQL Lite database...")
 	// TODO: only create if it doesn't exist
-	file, err := os.Create("../data.db")
+	file, err := os.Create("data.db")
 
 	if err != nil {
 		log.Fatal(err.Error())
@@ -83,7 +83,7 @@ func initializeDatabase() *sql.DB {
 
 	file.Close()
 
-	db, err := sql.Open("sqlite3", "../data.db")
+	db, err := sql.Open("sqlite3", "data.db")
 
 	if err != nil {
 		log.Fatal(err.Error())
@@ -91,7 +91,7 @@ func initializeDatabase() *sql.DB {
 
 	// run sql files
 
-	c, err := ioutil.ReadFile("../script.sql")
+	c, err := ioutil.ReadFile("script.sql")
 
 	if err != nil {
 		log.Fatal(err.Error())

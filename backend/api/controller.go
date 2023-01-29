@@ -29,7 +29,7 @@ func (handler *Handler) UploadFileHandler(c echo.Context) error {
 	defer src.Close()
 
 	// Create the uploads fodler if it doesn't already exist
-	err = os.MkdirAll("../uploads", os.ModePerm)
+	err = os.MkdirAll("uploads", os.ModePerm)
 
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
@@ -41,12 +41,12 @@ func (handler *Handler) UploadFileHandler(c echo.Context) error {
 	filePath := ""
 	fileNameToInsertIntoDatabase := ""
 	if c.FormValue("file_name") != "" {
-		filePath = fmt.Sprintf("../uploads/%s%s", c.FormValue("file_name"), filepath.Ext(file.Filename))
+		filePath = fmt.Sprintf("uploads/%s%s", c.FormValue("file_name"), filepath.Ext(file.Filename))
 		fileNameToInsertIntoDatabase = c.FormValue("file_name")
 	} else {
 		currentUnixTime := time.Now().UnixNano()
 		fileNameToInsertIntoDatabase = strconv.FormatInt(currentUnixTime, 10)
-		filePath = fmt.Sprintf("../uploads/%d%s", currentUnixTime, filepath.Ext(file.Filename))
+		filePath = fmt.Sprintf("uploads/%d%s", currentUnixTime, filepath.Ext(file.Filename))
 	}
 
 	dst, err := os.Create(filePath)

@@ -20,7 +20,7 @@ Simple app to practice uploading files in React and GO
 
 - In a terminal:
     - cd backend
-    - go run main.go
+    - go run cmd/main.go
 
 ## To view SQL Lite Database
 

@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
+	utils "github.com/loganphillips792/fileupload"
 )
 
 func (handler *Handler) UploadFileHandler(c echo.Context) error {
@@ -213,8 +214,34 @@ func (handler *Handler) DownloadCSV(c echo.Context) error {
 
 */
 // to create session ID: https://github.com/astaxie/session/blob/master/session.go
-func (handler *Handler) Login(c echo.Context) error {
+// func (handler *Handler) Login(c echo.Context) error {}
 
+func (handler *Handler) Register(c echo.Context) error {
+	var user User
+	err := c.Bind(&user)
+	if err != nil {
+		return c.String(http.StatusBadRequest, "bad request")
+	}
+
+	handler.Logger.Infow("/login",
+		"Username", user.Username,
+		"Password", user.Password,
+	)
+
+	hashedPassword, _ := utils.HashPassword(user.Password)
+
+	query := "INSERT INTO users (username, password) VALUES (?, ?)"
+
+	handler.Logger.Infow("Running SQL statement",
+		"SQL", query,
+	)
+
+	_, err = handler.DbConn.Exec(query, user.Username, hashedPassword)
+
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	return c.String(http.StatusCreated, "User successfully created")
 }
 
 func HelloWorld(c echo.Context) error {

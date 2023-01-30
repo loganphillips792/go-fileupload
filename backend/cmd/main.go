@@ -74,7 +74,7 @@ func main() {
 	e.GET("/test", envHandler.GetImageByPath)
 	e.GET("/download_image/", envHandler.DownloadImage)
 	e.GET("/download_csv/", envHandler.DownloadCSV)
-	e.POST("/login/", envHandler.Login)
+	e.POST("/register/", envHandler.Register)
 	e.Logger.Fatal(e.Start(":8000"))
 }
 

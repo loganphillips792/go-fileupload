@@ -16,3 +16,8 @@ type Handler struct {
 	Logger *zap.SugaredLogger
 	DbConn *sql.DB
 }
+
+type User struct {
+	Username string
+	Password string
+}

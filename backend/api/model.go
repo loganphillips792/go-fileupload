@@ -18,6 +18,8 @@ type Handler struct {
 }
 
 type User struct {
+	Id       int
 	Username string
+	Email    sql.NullString
 	Password string
 }

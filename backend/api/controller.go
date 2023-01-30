@@ -214,7 +214,36 @@ func (handler *Handler) DownloadCSV(c echo.Context) error {
 
 */
 // to create session ID: https://github.com/astaxie/session/blob/master/session.go
-// func (handler *Handler) Login(c echo.Context) error {}
+func (handler *Handler) Login(c echo.Context) error {
+	var user User
+	err := c.Bind(&user)
+	if err != nil {
+		return c.String(http.StatusBadRequest, "bad request")
+	}
+
+	handler.Logger.Infow("/login",
+		"Username", user.Username,
+		"Password", user.Password,
+	)
+
+	query := "SELECT * FROM users where username = ?"
+
+	// Check if username and password exist
+	var userFromDatabase User
+	errFromScan := handler.DbConn.QueryRow(query, user.Username).Scan(&userFromDatabase.Id, &userFromDatabase.Username, &userFromDatabase.Email, &userFromDatabase.Password)
+
+	if errFromScan != nil {
+		log.Print(errFromScan)
+	}
+
+	match := utils.CompareHashAndPassword(userFromDatabase.Password, user.Password)
+
+	if match {
+		return c.String(http.StatusOK, "login successful")
+	} else {
+		return c.String(http.StatusUnauthorized, "Login failed")
+	}
+}
 
 func (handler *Handler) Register(c echo.Context) error {
 	var user User
@@ -223,7 +252,7 @@ func (handler *Handler) Register(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "bad request")
 	}
 
-	handler.Logger.Infow("/login",
+	handler.Logger.Infow("/register",
 		"Username", user.Username,
 		"Password", user.Password,
 	)
@@ -245,8 +274,6 @@ func (handler *Handler) Register(c echo.Context) error {
 }
 
 func HelloWorld(c echo.Context) error {
-	// w.Header().Set("Content-Type", "application/json")
-	// w.Write([]byte(`{"status":"OK"}`))
 	data := []byte(`{"status":"OK!"}`)
 	return c.Blob(http.StatusOK, "application/json", data)
 }

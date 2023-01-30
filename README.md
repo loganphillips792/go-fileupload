@@ -1,4 +1,4 @@
-Simple app to practice uploading files in React and GO
+Simple app to practice uploading and downloading files in React and GO
 
 # To Do
 

@@ -15,13 +15,12 @@ import { faImage, faUpload, faCancel } from '@fortawesome/free-solid-svg-icons'
 
 const Container = styled.div``;
 
+const UploadButton = styled(Button)``;
 const DownloadButton = styled(Button)``;
 
 function App() {
 
   const [selectedFile, setSelectedFile] = useState(null);
-
-  const [isFileSelected, setIsFileSelected] = useState(false);
 
   const [fileNameValue, setFileNameValue] = useState("");
 
@@ -50,6 +49,7 @@ function App() {
       })
   }, [query]);
 
+  // https://stackoverflow.com/a/51109645
   const handleSubmission = () => {
     const formData = new FormData();
 
@@ -155,9 +155,8 @@ function App() {
       <label>Enter a file name</label>
       <input type="text" name="file_name" value={fileNameValue} onChange={(event) => setFileNameValue(event.target.value)} />
 
-      <div>
-        <button onClick={handleSubmission}>Submit</button>
-      </div>
+
+      <UploadButton onClick={handleSubmission}>Submit</UploadButton>
 
       <h1>File List</h1>
 

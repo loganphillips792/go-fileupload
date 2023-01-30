@@ -210,10 +210,13 @@ func (handler *Handler) DownloadCSV(c echo.Context) error {
 // https://stackoverflow.com/questions/70686434/how-to-save-the-users-authorization-in-session-in-react
 // https://www.reddit.com/r/programming/comments/nag1cu/jwt_should_not_be_your_default_for_sessions/
 // https://www.sohamkamani.com/golang/session-cookie-authentication/
-func Login() {
+
+*/
+// to create session ID: https://github.com/astaxie/session/blob/master/session.go
+func (handler *Handler) Login(c echo.Context) error {
 
 }
-*/
+
 func HelloWorld(c echo.Context) error {
 	// w.Header().Set("Content-Type", "application/json")
 	// w.Write([]byte(`{"status":"OK"}`))

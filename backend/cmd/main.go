@@ -19,6 +19,8 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/gorilla/sessions"
+	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/loganphillips792/fileupload/api"
@@ -54,6 +56,7 @@ func main() {
 	*/
 
 	e := echo.New()
+	e.Use(session.Middleware(sessions.NewCookieStore([]byte("secret"))))
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},
@@ -71,6 +74,7 @@ func main() {
 	e.GET("/test", envHandler.GetImageByPath)
 	e.GET("/download_image/", envHandler.DownloadImage)
 	e.GET("/download_csv/", envHandler.DownloadCSV)
+	e.POST("/login/", envHandler.Login)
 	e.Logger.Fatal(e.Start(":8000"))
 }
 

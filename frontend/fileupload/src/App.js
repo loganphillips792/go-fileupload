@@ -5,7 +5,13 @@ import styled from "styled-components";
 import FileList from './FileList';
 import { Button } from '@mantine/core';
 import { FileButton } from '@mantine/core';
-import { IconUpload } from '@tabler/icons';
+import { Group, Text, useMantineTheme } from '@mantine/core';
+import { IconUpload, IconPhoto, IconX } from '@tabler/icons';
+import { Dropzone, DropzoneProps, IMAGE_MIME_TYPE } from '@mantine/dropzone';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faImage, faUpload, faCancel } from '@fortawesome/free-solid-svg-icons'
+
+
 
 const Container = styled.div``;
 
@@ -44,11 +50,6 @@ function App() {
       })
   }, [query]);
 
-  // const changeHandler = (event) => {
-  //   setSelectedFile(event.target.files[0]);
-  //   setIsFileSelected(true);
-  // }
-
   const handleSubmission = () => {
     const formData = new FormData();
 
@@ -76,54 +77,67 @@ function App() {
       .then(resp => resp.text())
       .then(response => {
         console.log("RESPONSE", response)
-        // const url = window.URL.createObjectURL(new Blob([response]));
-        // console.log("LINK", url)
-        // const link = document.createElement("a");
-        // link.href = url;
-        // link.setAttribute("download", `your_file_name.csv`);
-        // document.body.appendChild(link);
-        // link.click();
+    
+        // Creating a Blob for having a csv file format
+        // and passing the data with type
+        const blob = new Blob([response], { type: 'text/csv' });
 
-        
-        
-    // Creating a Blob for having a csv file format
-    // and passing the data with type
-    const blob = new Blob([response], { type: 'text/csv' });
- 
-    // Creating an object for downloading url
-    const url = window.URL.createObjectURL(blob)
- 
-    // Creating an anchor(a) tag of HTML
-    const a = document.createElement('a')
- 
-    // Passing the blob downloading url
-    a.setAttribute('href', url)
- 
-    // Setting the anchor tag attribute for downloading
-    // and passing the download file name
-    a.setAttribute('download', 'download.csv');
- 
-    // Performing a download with click
-    a.click()
+        // Creating an object for downloading url
+        const url = window.URL.createObjectURL(blob)
+
+        // Creating an anchor(a) tag of HTML
+        const a = document.createElement('a')
+
+        // Passing the blob downloading url
+        a.setAttribute('href', url)
+
+        // Setting the anchor tag attribute for downloading
+        // and passing the download file name
+        a.setAttribute('download', 'download.csv');
+
+        // Performing a download with click
+        a.click()
       })
       .catch(error => {
         console.error("Error", error)
       })
-   
-  }
 
+  }
+  const theme = useMantineTheme();
   return (
     <Container>
       <h1>Go file upload</h1>
 
-      {/* <input type="file" name="file" onChange={changeHandler} /> */}
-      
-      <FileButton onChange={setSelectedFile} accept="image/png,image/jpeg">
-          {(props) => <Button {...props}>Upload image</Button>}
-      </FileButton>
+      <Dropzone
+        onDrop={(files) => setSelectedFile(files[0])}
+        onReject={(files) => console.log('rejected files', files)}
+        maxSize={3 * 1024 ** 2}
+        accept={IMAGE_MIME_TYPE}
+      >
+        <Group position="center" spacing="xl" style={{ minHeight: 220, pointerEvents: 'none' }}>
+          <Dropzone.Accept>
+            <FontAwesomeIcon icon={faImage} />
+          </Dropzone.Accept>
+          <Dropzone.Reject>
+            <FontAwesomeIcon icon={faCancel} />
+          </Dropzone.Reject>
+          <Dropzone.Idle>
+            <FontAwesomeIcon icon={faUpload} />
+          </Dropzone.Idle>
+
+          <div>
+            <Text size="xl" inline>
+              Drag images here or click to select files
+            </Text>
+            <Text size="sm" color="dimmed" inline mt={7}>
+              Attach as many files as you like, each file should not exceed 5mb
+            </Text>
+          </div>
+        </Group>
+      </Dropzone>
 
 
-      {isFileSelected ?
+      {selectedFile != null ?
         (
           <div>
             <p>Filename: {selectedFile.name}</p>
@@ -147,11 +161,11 @@ function App() {
 
       <h1>File List</h1>
 
-      <input type="text" name="search"  value={query} onChange={(e) => setQuery(e.target.value)}/>
+      <input type="text" name="search" value={query} onChange={(e) => setQuery(e.target.value)} />
       <span>{query}</span>
 
 
-      <FileList imagesInfo={data} isLoading={isLoading} />      
+      <FileList imagesInfo={data} isLoading={isLoading} />
 
       <DownloadButton onClick={handleDownloadCSV}>Download CSV</DownloadButton>
 

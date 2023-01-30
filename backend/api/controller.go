@@ -185,9 +185,13 @@ func (handler *Handler) DeleteImage(c echo.Context) error {
 	return c.NoContent(http.StatusNoContent)
 }
 
+func (handler *Handler) GetImageByPath(c echo.Context) error {
+	return c.File(("uploads/YO.jpeg"))
+}
+
 // https://github.com/labstack/echo/blob/v3.3.10/context.go#L542
 func (handler *Handler) DownloadImage(c echo.Context) error {
-	return c.Attachment("../data/IMG_7015.jpg", "download.jpg")
+	return c.Attachment("data/IMG_7015.jpg", "download.jpg")
 }
 
 // send csv to client to automatically download
@@ -195,7 +199,7 @@ func (handler *Handler) DownloadImage(c echo.Context) error {
 // https://stackoverflow.com/questions/68162651/go-how-to-response-csv-file
 // https://medium.com/wesionary-team/create-csv-file-in-go-server-and-download-from-reactjs-4f22f148290b
 func (handler *Handler) DownloadCSV(c echo.Context) error {
-	return c.Attachment("../data/airtravel.csv", "download.csv")
+	return c.Attachment("data/airtravel.csv", "download.csv")
 }
 
 /*

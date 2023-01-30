@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import styled from "styled-components";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faTrash, faThumbsUp } from '@fortawesome/free-solid-svg-icons'
+import { faTrash, faThumbsUp, faDownload } from '@fortawesome/free-solid-svg-icons'
+
 
 const Container = styled.div`
     h1 {
@@ -9,17 +10,34 @@ const Container = styled.div`
     }
 `;
 
-const ImagesContainer = styled.div`
+const Images = styled.div`
+    margin: 0 auto;
+    max-width: 1000px;
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 5%;
+    grid-template-columns: repeat(auto-fill, minmax(225px, 1fr));
+    grid-auto-rows: auto;
+    gap: 20px;
+    font-family: sans-serif;
+    padding-top: 30px;
 `
 
+const Card = styled.div`
+    border: 1px solid #ccc;
+    box-shadow: 2px 2px 6px 0px  rgba(0,0,0,0.3);
 
-const ImageContainer = styled.div`
-    display: flex;
-    justify-content: center;
-    padding: 1em;
+    img {
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+        display: block;
+        border-top: 2px solid #333333;
+        border-right: 2px solid #333333;
+        border-left: 2px solid #333333;
+    }
+`;
+
+const Content = styled.div`
+    padding: 1rem;
 `;
 
 const DeleteIconContainer = styled.div`
@@ -27,13 +45,26 @@ const DeleteIconContainer = styled.div`
     border: none;
 `;
 
-const DeleteIcon = styled(FontAwesomeIcon)``;
 
-const ThumbsUpIcon = styled(FontAwesomeIcon)``;
+const Icons = styled.div`
+    display: flex;
+    justify-content: space-evenly;
+`;
 
-// const StyledDeleteIcon = styled(DeleteIcon)`
-//     width: 15px;
-// `;
+const Icon = styled(FontAwesomeIcon)`
+    font-size: 25px;
+    cursor: pointer;
+    transition: all 0.2s ease-in;
+
+    &:hover {
+        transform: translate(0, -10px);
+    }
+`;
+
+
+const DeleteIcon = styled(Icon)``;
+const ThumbsUpIcon = styled(Icon)``;
+const DownloadIcon = styled(Icon)``;
 
 const FileList = ({imagesInfo, isLoading}) => {
     console.log("PROPS imagesInfo", imagesInfo);
@@ -59,35 +90,37 @@ const FileList = ({imagesInfo, isLoading}) => {
 
             {isLoading && <div>Loading...</div>}
 
-            <ImagesContainer>
+            <Images>
                 {/* {Array.isArray(data) && data.length ? data.map(function (image) { */}
-            {imagesInfo.length && imagesInfo ? imagesInfo.map(function (image) {
+            {imagesInfo ? imagesInfo.map(function (image) {
                 return (
-                    <ImageContainer>
-                        {image.name}
-                        {image.file_path}
-                        <DeleteIconContainer onClick={() => handleDelete(image.id)}>
-                            <DeleteIcon icon={faTrash} />
-                        </DeleteIconContainer>
-                        <ThumbsUpIcon icon={faThumbsUp} />
-                    </ImageContainer>
+                    <Card>
+                        <img src="http://127.0.0.1:8000/test" />
+                        <Content>
+                            <div>
+                                <span>File Name: {image.name}</span>
+                            </div>
+                            
+                            <div>
+                                <span>File Path: {image.file_path}</span>
+                            </div>
+                        </Content>
+                        <Icons>
+                            <DeleteIconContainer onClick={() => handleDelete(image.id)}>
+                                <DeleteIcon icon={faTrash} />
+                            </DeleteIconContainer>
+                            <ThumbsUpIcon icon={faThumbsUp} />
+                            <DownloadIcon icon={faDownload} />
+                        </Icons>
+                    </Card>
                 )
             }) : <div>Upload a file to see it here....</div>
 
             }
-            </ImagesContainer>
+            </Images>
 
         </Container>
     )
-}
-
-// https://www.tutsmake.com/react-thumbnail-image-preview-before-upload-tutorial/
-const ImagePreview = () => {
-    return (
-        <div>
-            hi
-        </div>
-    );
 }
 
 export default FileList;

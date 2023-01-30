@@ -68,6 +68,7 @@ func main() {
 	e.GET("/images/", envHandler.GetAllFiles)
 	e.POST("/uploadfile/", envHandler.UploadFileHandler, middleware.BodyLimit("1M")) // Body limit middleware sets the maximum allowed size for a request body, if the size exceeds the configured limit, it sends “413 - Request Entity Too Large” response. The body limit is determined based on both Content-Length request header and actual content read, which makes it super secure
 	e.DELETE("/images/:id", envHandler.DeleteImage)
+	e.GET("/test", envHandler.GetImageByPath)
 	e.GET("/download_image/", envHandler.DownloadImage)
 	e.GET("/download_csv/", envHandler.DownloadCSV)
 	e.Logger.Fatal(e.Start(":8000"))
@@ -79,7 +80,7 @@ func initializeDatabase() *sql.DB {
 	file, openFileErr := os.Open("data.db")
 
 	if openFileErr != nil {
-		log.Fatal(openFileErr.Error())
+		log.Print(openFileErr.Error())
 	}
 
 	if errors.Is(openFileErr, os.ErrNotExist) {

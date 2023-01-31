@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/gorilla/securecookie"
 	"github.com/labstack/echo/v4"
 	utils "github.com/loganphillips792/fileupload"
 )
@@ -213,6 +214,7 @@ func (handler *Handler) DownloadCSV(c echo.Context) error {
 // https://www.sohamkamani.com/golang/session-cookie-authentication/
 
 */
+
 // to create session ID: https://github.com/astaxie/session/blob/master/session.go
 func (handler *Handler) Login(c echo.Context) error {
 	var user User
@@ -239,6 +241,22 @@ func (handler *Handler) Login(c echo.Context) error {
 	match := utils.CompareHashAndPassword(userFromDatabase.Password, user.Password)
 
 	if match {
+		var hashKey = []byte("very-secret")       // encode value
+		var blockKey = []byte("a-lot-secret1111") // encrypt value
+		var s = securecookie.New(hashKey, blockKey)
+		value := map[string]string{
+			"foo": "bar",
+		}
+
+		if encoded, errFromCookie := s.Encode("user_session", value); errFromCookie == nil {
+			cookie := new(http.Cookie)
+			cookie.Name = "user_session"
+			cookie.Value = encoded
+			cookie.Expires = time.Now().Add(24 * time.Hour)
+			cookie.HttpOnly = true
+			// cookie.Secure = true
+			c.SetCookie(cookie)
+		}
 		return c.String(http.StatusOK, "login successful")
 	} else {
 		return c.String(http.StatusUnauthorized, "Login failed")

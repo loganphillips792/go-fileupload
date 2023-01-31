@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/securecookie"
 	"github.com/labstack/echo/v4"
 	utils "github.com/loganphillips792/fileupload"
@@ -244,8 +245,25 @@ func (handler *Handler) Login(c echo.Context) error {
 		var hashKey = []byte("very-secret")       // encode value
 		var blockKey = []byte("a-lot-secret1111") // encrypt value
 		var s = securecookie.New(hashKey, blockKey)
+
+		// create session ID
+		sessionId := uuid.New().String()
+		expiresAt := time.Now().Add(120 * time.Second).Unix()
+
+		query := "INSERT INTO sessions (session_id, expires_at) VALUES (?, ?)"
+
+		handler.Logger.Infow("Running SQL statement for session",
+			"SQL", query,
+		)
+
+		_, err = handler.DbConn.Exec(query, sessionId, expiresAt)
+
+		if err != nil {
+			handler.Logger.Errorw("Error inserting into sessions table", "error", err)
+		}
+
 		value := map[string]string{
-			"foo": "bar",
+			"sessionId": sessionId,
 		}
 
 		if encoded, errFromCookie := s.Encode("user_session", value); errFromCookie == nil {

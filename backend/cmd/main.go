@@ -19,8 +19,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/gorilla/sessions"
-	"github.com/labstack/echo-contrib/session"
+	"github.com/gorilla/securecookie"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/loganphillips792/fileupload/api"
@@ -56,7 +55,46 @@ func main() {
 	*/
 
 	e := echo.New()
-	e.Use(session.Middleware(sessions.NewCookieStore([]byte("secret"))))
+
+	g := e.Group("/api")
+	g.Use(middleware.KeyAuthWithConfig(middleware.KeyAuthConfig{
+		KeyLookup: "cookie:user_session",
+		Validator: func(key string, c echo.Context) (bool, error) {
+			sugar.Info("Validating in Middlware...")
+			var hashKey = []byte("very-secret")       // encode value
+			var blockKey = []byte("a-lot-secret1111") // encrypt value
+			var s = securecookie.New(hashKey, blockKey)
+			value := make(map[string]string)
+
+			err = s.Decode("user_session", key, &value)
+
+			if err != nil {
+				sugar.Errorw("Error when decoding cookie value", err)
+				return false, errors.New("authentication failed. Please login again")
+			}
+			sugar.Infow("Decryption", "The decrypted value is", value["sessionId"])
+
+			// we now have the decrypted session id. We will now look it up in the sessions table
+			query := "SELECT * FROM sessions where session_id = ?"
+
+			// Check if username and password exist
+			var sessionId string
+			var sessionData string
+			errFromScan := db.QueryRow(query, value["sessionId"]).Scan(&sessionId, &sessionData)
+
+			if errFromScan != nil {
+				log.Print(errFromScan)
+			}
+
+			if sessionId == value["sessionId"] {
+				sugar.Info("Middlware: Session successfully validated. Coninuting processing")
+				return true, nil
+			} else {
+				return false, errors.New("authentication failed. Please login again")
+			}
+		},
+	}))
+	// g.Use(ProcessRequest)
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},
@@ -67,7 +105,8 @@ func main() {
 		},
 	}))
 
-	e.GET("/hello", api.HelloWorld)
+	g.GET("/hello", api.HelloWorld)
+
 	e.GET("/images/", envHandler.GetAllFiles)
 	e.POST("/uploadfile/", envHandler.UploadFileHandler, middleware.BodyLimit("1M")) // Body limit middleware sets the maximum allowed size for a request body, if the size exceeds the configured limit, it sends “413 - Request Entity Too Large” response. The body limit is determined based on both Content-Length request header and actual content read, which makes it super secure
 	e.DELETE("/images/:id", envHandler.DeleteImage)
@@ -76,8 +115,21 @@ func main() {
 	e.GET("/download_csv/", envHandler.DownloadCSV)
 	e.POST("/register/", envHandler.Register)
 	e.POST("/login/", envHandler.Login)
+
 	e.Logger.Fatal(e.Start(":8000"))
 }
+
+// midddlware function
+// func ProcessRequest(next echo.HandlerFunc) echo.HandlerFunc {
+// 	return func(c echo.Context) error {
+// 		fmt.Println("PROCESSING REQUEST MIDDLEWARE")
+// 		if err := next(c); err != nil {
+// 			c.Error(err)
+// 		}
+
+// 		return nil
+// 	}
+// }
 
 func initializeDatabase() *sql.DB {
 	log.Print("Initializing SQL Lite database...")

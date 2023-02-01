@@ -7,3 +7,5 @@ coverage.out
 # file types
 uploads/*.jpeg
 
+# environment file
+.env

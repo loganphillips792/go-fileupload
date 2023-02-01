@@ -18,6 +18,13 @@ Simple app to practice uploading and downloading files in React and GO
 
 ## Backend
 
+Create ```.env``` file at root of backend
+
+```
+GORILLA_SESSIONS_HASH_KEY=<some_hash_key_here>
+GORILLA_SESSIONS_BLOCK_KEY=<some_block_key_here>
+```
+
 - In a terminal:
     - cd backend
     - go run cmd/main.go

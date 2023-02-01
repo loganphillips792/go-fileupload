@@ -20,19 +20,21 @@ import (
 	"os"
 
 	"github.com/gorilla/securecookie"
-	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/loganphillips792/fileupload/api"
+	"github.com/loganphillips792/fileupload/config"
 
 	_ "github.com/mattn/go-sqlite3"
 	"go.uber.org/zap"
 )
 
 func main() {
+	cfg, configError := config.Init()
 
-	// get config
-	godotenv.Load(".env")
+	if configError != nil {
+		log.Fatal("config error")
+	}
 
 	db := initializeDatabase()
 	defer db.Close()
@@ -47,7 +49,7 @@ func main() {
 
 	sugar := logger.Sugar()
 
-	envHandler := &api.Handler{Logger: sugar, DbConn: db}
+	envHandler := &api.Handler{Logger: sugar, DbConn: db, Cfg: cfg}
 	/*
 		sugar.Infow("failed to fetch URL",
 			// Structured context as loosely typed key-value pairs.
@@ -65,8 +67,8 @@ func main() {
 		KeyLookup: "cookie:user_session",
 		Validator: func(key string, c echo.Context) (bool, error) {
 			sugar.Info("Validating in Middlware...")
-			var hashKey = []byte(os.Getenv("GORILLA_SESSIONS_HASH_KEY"))   // encode value
-			var blockKey = []byte(os.Getenv("GORILLA_SESSIONS_BLOCK_KEY")) // encrypt value
+			var hashKey = []byte(cfg.GorillaSessionsHashKey)   // encode value
+			var blockKey = []byte(cfg.GorillaSessionsBlockKey) // encrypt value
 			var s = securecookie.New(hashKey, blockKey)
 			value := make(map[string]string)
 

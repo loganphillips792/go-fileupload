@@ -3,6 +3,7 @@ package api
 import (
 	"database/sql"
 
+	"github.com/loganphillips792/fileupload/config"
 	"go.uber.org/zap"
 )
 
@@ -15,6 +16,7 @@ type Image struct {
 type Handler struct {
 	Logger *zap.SugaredLogger
 	DbConn *sql.DB
+	Cfg    *config.AppConf
 }
 
 type User struct {

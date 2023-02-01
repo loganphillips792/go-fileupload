@@ -20,6 +20,7 @@ import (
 	"os"
 
 	"github.com/gorilla/securecookie"
+	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/loganphillips792/fileupload/api"
@@ -29,6 +30,9 @@ import (
 )
 
 func main() {
+
+	// get config
+	godotenv.Load(".env")
 
 	db := initializeDatabase()
 	defer db.Close()
@@ -61,8 +65,8 @@ func main() {
 		KeyLookup: "cookie:user_session",
 		Validator: func(key string, c echo.Context) (bool, error) {
 			sugar.Info("Validating in Middlware...")
-			var hashKey = []byte("very-secret")       // encode value
-			var blockKey = []byte("a-lot-secret1111") // encrypt value
+			var hashKey = []byte(os.Getenv("GORILLA_SESSIONS_HASH_KEY"))   // encode value
+			var blockKey = []byte(os.Getenv("GORILLA_SESSIONS_BLOCK_KEY")) // encrypt value
 			var s = securecookie.New(hashKey, blockKey)
 			value := make(map[string]string)
 

@@ -19,7 +19,6 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/gorilla/securecookie"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/loganphillips792/fileupload/api"
@@ -59,43 +58,7 @@ func main() {
 func setupRouter(e *echo.Echo, db *sql.DB, handler *api.Handler, sugar *zap.SugaredLogger, cfg *config.AppConf) {
 
 	g := e.Group("/api")
-	g.Use(middleware.KeyAuthWithConfig(middleware.KeyAuthConfig{
-		KeyLookup: "cookie:user_session",
-		Validator: func(key string, c echo.Context) (bool, error) {
-			sugar.Info("Validating in Middlware...")
-			var hashKey = []byte(cfg.GorillaSessionsHashKey)   // encode value
-			var blockKey = []byte(cfg.GorillaSessionsBlockKey) // encrypt value
-			var s = securecookie.New(hashKey, blockKey)
-			value := make(map[string]string)
-
-			err := s.Decode("user_session", key, &value)
-
-			if err != nil {
-				sugar.Errorw("Error when decoding cookie value", err)
-				return false, errors.New("authentication failed. Please login again")
-			}
-			sugar.Infow("Decryption", "The decrypted value is", value["sessionId"])
-
-			// we now have the decrypted session id. We will now look it up in the sessions table
-			query := "SELECT * FROM sessions where session_id = ?"
-
-			// Check if username and password exist
-			var sessionId string
-			var sessionData string
-			errFromScan := db.QueryRow(query, value["sessionId"]).Scan(&sessionId, &sessionData)
-
-			if errFromScan != nil {
-				log.Print(errFromScan)
-			}
-
-			if sessionId == value["sessionId"] {
-				sugar.Info("Middlware: Session successfully validated. Coninuting processing")
-				return true, nil
-			} else {
-				return false, errors.New("authentication failed. Please login again")
-			}
-		},
-	}))
+	g.Use(api.ApiMiddleware(db, handler, sugar, cfg))
 	// g.Use(ProcessRequest)
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{

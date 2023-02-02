@@ -30,37 +30,33 @@ import (
 )
 
 func main() {
+	// configuration
 	cfg, configError := config.Init()
 
 	if configError != nil {
 		log.Fatal("config error")
 	}
 
+	// Set up database
 	db := initializeDatabase()
 	defer db.Close()
 
+	// Set up logging
 	logger, _ := zap.NewProduction()
-	//logger.Sync() // flushes buffer, if any
 	err := logger.Sync() // flushes buffer, if any
-	// for linting
-	if err != nil {
+	if err != nil {      // for linting
 		log.Print("Error when encoding json")
 	}
 
 	sugar := logger.Sugar()
-
-	envHandler := &api.Handler{Logger: sugar, DbConn: db, Cfg: cfg}
-	/*
-		sugar.Infow("failed to fetch URL",
-			// Structured context as loosely typed key-value pairs.
-			"url", url,
-			"attempt", 3,
-			"backoff", time.Second,
-		)
-		sugar.Infof("Failed to fetch URL: %s", url)
-	*/
+	handler := api.DefaultHandler(sugar, db, cfg)
 
 	e := echo.New()
+	setupRouter(e, db, handler, sugar, cfg)
+	e.Logger.Fatal(e.Start(":8000"))
+}
+
+func setupRouter(e *echo.Echo, db *sql.DB, handler *api.Handler, sugar *zap.SugaredLogger, cfg *config.AppConf) {
 
 	g := e.Group("/api")
 	g.Use(middleware.KeyAuthWithConfig(middleware.KeyAuthConfig{
@@ -72,7 +68,7 @@ func main() {
 			var s = securecookie.New(hashKey, blockKey)
 			value := make(map[string]string)
 
-			err = s.Decode("user_session", key, &value)
+			err := s.Decode("user_session", key, &value)
 
 			if err != nil {
 				sugar.Errorw("Error when decoding cookie value", err)
@@ -113,29 +109,16 @@ func main() {
 
 	g.GET("/hello", api.HelloWorld)
 
-	e.GET("/images/", envHandler.GetAllFiles)
-	e.POST("/uploadfile/", envHandler.UploadFileHandler, middleware.BodyLimit("1M")) // Body limit middleware sets the maximum allowed size for a request body, if the size exceeds the configured limit, it sends “413 - Request Entity Too Large” response. The body limit is determined based on both Content-Length request header and actual content read, which makes it super secure
-	e.DELETE("/images/:id", envHandler.DeleteImage)
-	e.GET("/test", envHandler.GetImageByPath)
-	e.GET("/download_image/", envHandler.DownloadImage)
-	e.GET("/download_csv/", envHandler.DownloadCSV)
-	e.POST("/register/", envHandler.Register)
-	e.POST("/login/", envHandler.Login)
+	e.GET("/images/", handler.GetAllFiles)
+	e.POST("/uploadfile/", handler.UploadFileHandler, middleware.BodyLimit("1M")) // Body limit middleware sets the maximum allowed size for a request body, if the size exceeds the configured limit, it sends “413 - Request Entity Too Large” response. The body limit is determined based on both Content-Length request header and actual content read, which makes it super secure
+	e.DELETE("/images/:id", handler.DeleteImage)
+	e.GET("/test", handler.GetImageByPath)
+	e.GET("/download_image/", handler.DownloadImage)
+	e.GET("/download_csv/", handler.DownloadCSV)
+	e.POST("/register/", handler.Register)
+	e.POST("/login/", handler.Login)
 
-	e.Logger.Fatal(e.Start(":8000"))
 }
-
-// midddlware function
-// func ProcessRequest(next echo.HandlerFunc) echo.HandlerFunc {
-// 	return func(c echo.Context) error {
-// 		fmt.Println("PROCESSING REQUEST MIDDLEWARE")
-// 		if err := next(c); err != nil {
-// 			c.Error(err)
-// 		}
-
-// 		return nil
-// 	}
-// }
 
 func initializeDatabase() *sql.DB {
 	log.Print("Initializing SQL Lite database...")

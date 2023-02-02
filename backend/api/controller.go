@@ -1,6 +1,7 @@
 package api
 
 import (
+	"database/sql"
 	"fmt"
 	"image"
 	"image/color"
@@ -17,7 +18,23 @@ import (
 	"github.com/gorilla/securecookie"
 	"github.com/labstack/echo/v4"
 	utils "github.com/loganphillips792/fileupload"
+	"github.com/loganphillips792/fileupload/config"
+	"go.uber.org/zap"
 )
+
+type Handler struct {
+	Logger *zap.SugaredLogger
+	DbConn *sql.DB
+	Cfg    *config.AppConf
+}
+
+func DefaultHandler(log *zap.SugaredLogger, db *sql.DB, cfg *config.AppConf) *Handler {
+	return &Handler{
+		Logger: log,
+		DbConn: db,
+		Cfg:    cfg,
+	}
+}
 
 func (handler *Handler) UploadFileHandler(c echo.Context) error {
 	handler.Logger.Infof("Content Length %d ", c.Request().ContentLength)

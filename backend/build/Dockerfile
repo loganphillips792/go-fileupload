@@ -1,7 +1,7 @@
 FROM golang:latest
 
 WORKDIR /app
-
+RUN ls
 COPY go.mod ./
 COPY go.sum ./
 RUN go mod download

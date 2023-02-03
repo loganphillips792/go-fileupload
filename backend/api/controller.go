@@ -166,7 +166,11 @@ func (handler *Handler) changeImageToBlackAndWhite(filePath string) {
 	defer newFile.Close()
 
 	// Encode the new image as a JPEG
-	jpeg.Encode(newFile, newImg, nil)
+	imageEncodeError := jpeg.Encode(newFile, newImg, nil)
+
+	if imageEncodeError != nil {
+		handler.Logger.Error("Error when encoding image: ", imageEncodeError)
+	}
 
 	time.Sleep(10 * time.Second)
 

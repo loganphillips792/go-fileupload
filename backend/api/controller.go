@@ -28,7 +28,7 @@ type Handler struct {
 	Cfg    *config.AppConf
 }
 
-func DefaultHandler(log *zap.SugaredLogger, db *sql.DB, cfg *config.AppConf) *Handler {
+func BuildHandler(log *zap.SugaredLogger, db *sql.DB, cfg *config.AppConf) *Handler {
 	return &Handler{
 		Logger: log,
 		DbConn: db,

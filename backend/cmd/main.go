@@ -48,7 +48,7 @@ func main() {
 	}
 
 	sugar := logger.Sugar()
-	handler := api.DefaultHandler(sugar, db, cfg)
+	handler := api.BuildHandler(sugar, db, cfg)
 
 	e := echo.New()
 	setupRouter(e, db, handler, sugar, cfg)

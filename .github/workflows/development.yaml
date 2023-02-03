@@ -7,8 +7,32 @@ on:
   workflow_dispatch:
 
 jobs:
+  lint_backend:
+    name: Lint Backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.18
+      - name: Build
+        working-directory: backend
+        run: go build -v ./...
+      - name: Lint
+        working-directory: backend
+        run: |
+          # binary will be $(go env GOPATH)/bin/golangci-lint
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.45.2
+          golangci-lint --version
+          golangci-lint run ./...
+      - name: Vet
+        working-directory: backend
+        run: |
+          go vet ./...
   test_backend:
-    name: Test and Lint Backend
+    name: Test Backend
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code

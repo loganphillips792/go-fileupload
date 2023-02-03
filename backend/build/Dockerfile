@@ -10,5 +10,5 @@ COPY . .
 
 RUN go build -o gofile-upload.bin cmd/main.go
 
-EXPOSE 8080
+EXPOSE 8000
 CMD ["./gofile-upload.bin"]

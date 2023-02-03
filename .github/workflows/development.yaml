@@ -57,6 +57,33 @@ jobs:
             echo "COVERAGE IS ABOVE THRESHOLD, CONTINUING"
           fi
           echo "Test Coverage Complete"
+  push_to_registry:
+    name: Push Docker image to Docker hub
+    runs-on: ubuntu-latest
+    needs:
+      - test_backend
+    steps:
+      - name: Checkout the repo
+        uses: actions/checkout@v3
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata@v4
+        with:
+          images: dockedupstream/golangfileupload
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v3
+        with:
+          # Action uses this to find the Docker file: ({context}/Dockerfile)
+          context: backend
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
   Test_Frontend:
     runs-on: ubuntu-latest
     steps:

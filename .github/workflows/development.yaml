@@ -88,7 +88,8 @@ jobs:
       - test_backend
       - lint_backend
     steps:
-      # By default, this action uses the Git context, so you don't need to use the actions/checkout action to check out the repository as this will be done directly by BuildKit
+      - name: Checkout code
+        uses: actions/checkout@v3
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:

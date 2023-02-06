@@ -2,12 +2,14 @@ package api
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"image"
 	"image/color"
 	"image/jpeg"
 	"io"
 	"log"
+	"mime/multipart"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -45,10 +47,25 @@ func (handler *Handler) UploadFileHandler(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
-	src, err := file.Open()
+	// check if file type is supported
+
+	fileToCheck, _ := file.Open()
+
+	_, err = handler.checkIfFileTypeIsSupported(fileToCheck)
+
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
+
+	defer fileToCheck.Close()
+
+	// open the file
+	src, err := file.Open()
+
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
 	defer src.Close()
 
 	// Create the uploads fodler if it doesn't already exist
@@ -122,6 +139,25 @@ func (handler *Handler) UploadFileHandler(c echo.Context) error {
 
 	// handler.logger.Infof("File type is %s ", filetype)
 
+}
+
+func (handler *Handler) checkIfFileTypeIsSupported(file multipart.File) (bool, error) {
+	// Only the first 512 bytes are used to sniff the content type
+	buffer := make([]byte, 512)
+
+	_, err := file.Read(buffer)
+	if err != nil {
+		return false, err
+	}
+	contentType := http.DetectContentType(buffer)
+	handler.Logger.Info("CONTENT TYPE IS ", contentType)
+
+	switch contentType {
+	case "image/jpeg":
+		return true, nil
+	default:
+		return false, errors.New("file type not supported")
+	}
 }
 
 // When user successfully uploads image, they can click "convert to black and white". The new image will

@@ -32,7 +32,7 @@ GORILLA_SESSIONS_BLOCK_KEY=<some_block_key_here>
 ### Using Docker
 
 1. ```cd backend```
-2. ```docker build -t getting-started-go --file=build/Dockerfile .```
+2. ```docker build -t getting-started-go --file=./Dockerfile .```
 3. ```docker run --publish 8000:8000 getting-started-go```
 4. ```curl 127.0.0.1:8000/api/hello```
 

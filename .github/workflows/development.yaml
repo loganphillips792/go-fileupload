@@ -100,11 +100,13 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: dockedupstream/golangfileupload
+          tags: | # set latest tag for master branch. https://github.com/docker/metadata-action#latest-tag
+            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'dockerDeployment') }}
       - name: Build and push Docker image
         uses: docker/build-push-action@v3
         with:
           # Action uses this to find the Docker file: ({context}/Dockerfile)
-          context: backend/build
+          context: backend
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

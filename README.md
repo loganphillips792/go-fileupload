@@ -62,3 +62,8 @@ GORILLA_SESSIONS_BLOCK_KEY=<some_block_key_here>
 
 1. ```docker build -t getting-started-go --file=Dockerfile .```
 2 ```docker run --publish 8080:8080 getting-started-go```
+
+# Run in Docker-Compose
+
+1. Go to root of directory
+2. docker-compose up

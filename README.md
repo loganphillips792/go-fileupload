@@ -60,5 +60,5 @@ GORILLA_SESSIONS_BLOCK_KEY=<some_block_key_here>
 
 # Run in Docker
 
-1. ```docker build -t getting-started-go --file=build/Dockerfile .```
+1. ```docker build -t getting-started-go --file=Dockerfile .```
 2 ```docker run --publish 8080:8080 getting-started-go```

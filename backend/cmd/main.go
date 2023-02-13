@@ -1,13 +1,5 @@
 package main
 
-// https://gist.github.com/subfuzion/08c5d85437d5d4f00e58
-
-// https://freshman.tech/file-upload-golang/
-
-// https://eli.thegreenplace.net/2021/rest-servers-in-go-part-1-standard-library/
-
-// https://stackoverflow.com/questions/40684307/how-can-i-receive-an-uploaded-file-using-a-golang-net-http-server
-
 // https://stackoverflow.com/questions/21948243/how-can-i-post-files-and-json-data-together-with-curl
 
 import (
@@ -39,10 +31,6 @@ func main() {
 	if err != nil {      // for linting
 		log.Print("Error when encoding json")
 	}
-
-	// Set up database
-	// db := initializeDatabase()
-	// defer db.Close()
 
 	db, postgresErr := db.CreatePostgresConnection()
 

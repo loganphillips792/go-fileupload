@@ -33,7 +33,7 @@ func ApiMiddleware(db *sqlx.DB, handler *Handler, sugar *zap.SugaredLogger, cfg 
 			sugar.Infow("Decryption", "The decrypted value is", value["sessionId"])
 
 			// we now have the decrypted session id. We will now look it up in the sessions table
-			query := "SELECT * FROM sessions where session_id = ?"
+			query := "SELECT * FROM sessions where session_id = $1"
 
 			// Check if username and password exist
 			var sessionId string

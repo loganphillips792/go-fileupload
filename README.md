@@ -77,5 +77,5 @@ If you make any code changes, then run the following command to rebuild the code
 
 Entering psql
 
-- docker exec -it 77eb92dc0b2a bash
+- docker exec -it go-fileupload-db-1 bash
 - psql -U logan -d fileupload

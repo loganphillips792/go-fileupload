@@ -227,7 +227,7 @@ func (handler *Handler) GetAllFiles(c echo.Context) error {
 	query := "SELECT * FROM images"
 
 	if searchParams != "" {
-		query += " LIKE name "
+		query += " WHERE name LIKE "
 	}
 
 	handler.Logger.Infow("Running SQL statement",

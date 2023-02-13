@@ -62,9 +62,12 @@ func setupRouter(e *echo.Echo, db *sqlx.DB, handler *api.Handler, sugar *zap.Sug
 
 	g := e.Group("/api")
 	g.Use(api.ApiMiddleware(db, handler, sugar, cfg))
-	// g.Use(ProcessRequest)
 
-	e.Use(middleware.Logger())
+	// https://echo.labstack.com/middleware/logger/
+	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
+		Format: "method=${method}, uri=${uri}, status=${status}\n",
+	}))
+
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},
 		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},

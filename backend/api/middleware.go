@@ -1,11 +1,11 @@
 package api
 
 import (
-	"database/sql"
 	"errors"
 	"log"
 
 	"github.com/gorilla/securecookie"
+	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/loganphillips792/fileupload/config"
@@ -14,7 +14,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func ApiMiddleware(db *sql.DB, handler *Handler, sugar *zap.SugaredLogger, cfg *config.AppConf) echo.MiddlewareFunc {
+func ApiMiddleware(db *sqlx.DB, handler *Handler, sugar *zap.SugaredLogger, cfg *config.AppConf) echo.MiddlewareFunc {
 	return middleware.KeyAuthWithConfig(middleware.KeyAuthConfig{
 		KeyLookup: "cookie:user_session",
 		Validator: func(key string, c echo.Context) (bool, error) {
@@ -33,7 +33,7 @@ func ApiMiddleware(db *sql.DB, handler *Handler, sugar *zap.SugaredLogger, cfg *
 			sugar.Infow("Decryption", "The decrypted value is", value["sessionId"])
 
 			// we now have the decrypted session id. We will now look it up in the sessions table
-			query := "SELECT * FROM sessions where session_id = ?"
+			query := "SELECT * FROM sessions where session_id = $1"
 
 			// Check if username and password exist
 			var sessionId string

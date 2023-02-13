@@ -1,0 +1,25 @@
+version: "3.9"
+services:
+  backend:
+    build:
+      dockerfile: Dockerfile
+      context: backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - "./backend/uploads:/app/uploads" # when we save an image inside the container, it will be reflected on the host machine so we can see the files without having to go inside the cointainer
+    depends_on:
+      - db
+  db:
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER=logan
+      - POSTGRES_PASSWORD=12345
+      - POSTGRES_DB=fileupload
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      # Warning: scripts in /docker-entrypoint-initdb.d are only run if you start the container with a data directory that is empty; any pre-existing database will be left untouched on container startup. One common problem is that if one of your /docker-entrypoint-initdb.d scripts fails (which will cause the entrypoint script to exit) and your orchestrator restarts the container with the already initialized data directory, it will not continue on with your scripts
+      - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  db-data:

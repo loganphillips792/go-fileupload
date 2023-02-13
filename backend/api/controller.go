@@ -1,7 +1,6 @@
 package api
 
 import (
-	"database/sql"
 	"errors"
 	"fmt"
 	"image"
@@ -18,7 +17,9 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/gorilla/securecookie"
+	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
+	_ "github.com/lib/pq"
 	utils "github.com/loganphillips792/fileupload"
 	"github.com/loganphillips792/fileupload/config"
 	"go.uber.org/zap"
@@ -26,11 +27,11 @@ import (
 
 type Handler struct {
 	Logger *zap.SugaredLogger
-	DbConn *sql.DB
+	DbConn *sqlx.DB
 	Cfg    *config.AppConf
 }
 
-func BuildHandler(log *zap.SugaredLogger, db *sql.DB, cfg *config.AppConf) *Handler {
+func BuildHandler(log *zap.SugaredLogger, db *sqlx.DB, cfg *config.AppConf) *Handler {
 	return &Handler{
 		Logger: log,
 		DbConn: db,
@@ -103,10 +104,12 @@ func (handler *Handler) UploadFileHandler(c echo.Context) error {
 	}
 
 	// file save was successsful
-	query := "INSERT INTO images (name, file_path) VALUES (?, ?)"
+	query := "INSERT INTO images (name, file_path) VALUES ($1, $2)"
 
 	handler.Logger.Infow("Running SQL statement",
 		"SQL", query,
+		"name:", fileNameToInsertIntoDatabase,
+		"path:", filePath,
 	)
 
 	_, err = handler.DbConn.Exec(query, fileNameToInsertIntoDatabase, filePath)
@@ -224,7 +227,7 @@ func (handler *Handler) GetAllFiles(c echo.Context) error {
 	query := "SELECT * FROM images"
 
 	if searchParams != "" {
-		query += " LIKE name "
+		query += " WHERE name LIKE "
 	}
 
 	handler.Logger.Infow("Running SQL statement",
@@ -264,7 +267,7 @@ func (handler *Handler) DeleteImage(c echo.Context) error {
 
 	id := c.Param("id")
 
-	query := "DELETE FROM images WHERE id = ?"
+	query := "DELETE FROM images WHERE id = $1"
 
 	handler.Logger.Infow("Running SQL statement",
 		"id of image delete", id,
@@ -332,7 +335,7 @@ func (handler *Handler) Login(c echo.Context) error {
 		"Password", user.Password,
 	)
 
-	query := "SELECT * FROM users where username = ?"
+	query := "SELECT * FROM users where username = $1"
 
 	// Check if username and password exist
 	var userFromDatabase User
@@ -353,7 +356,7 @@ func (handler *Handler) Login(c echo.Context) error {
 		sessionId := uuid.New().String()
 		expiresAt := time.Now().Add(120 * time.Second).Unix()
 
-		query := "INSERT INTO sessions (session_id, expires_at) VALUES (?, ?)"
+		query := "INSERT INTO sessions (session_id, expires_at) VALUES ($1, $2)"
 
 		handler.Logger.Infow("Running SQL statement for session",
 			"SQL", query,
@@ -398,7 +401,7 @@ func (handler *Handler) Register(c echo.Context) error {
 
 	hashedPassword, _ := utils.HashPassword(user.Password)
 
-	query := "INSERT INTO users (username, password) VALUES (?, ?)"
+	query := "INSERT INTO users (username, password) VALUES ($1, $2)"
 
 	handler.Logger.Infow("Running SQL statement",
 		"SQL", query,

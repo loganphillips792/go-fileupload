@@ -21,6 +21,11 @@ Simple app to practice uploading and downloading files in React and GO
 Create ```.env``` file at root of backend
 
 ```
+DB_HOST=db
+DB_NAME=fileupload
+DB_PASSWORD=12345
+DB_USERNAME=logan
+DB_PORT=5432
 GORILLA_SESSIONS_HASH_KEY=<some_hash_key_here>
 GORILLA_SESSIONS_BLOCK_KEY=<some_block_key_here>
 ```
@@ -62,3 +67,15 @@ GORILLA_SESSIONS_BLOCK_KEY=<some_block_key_here>
 
 1. ```docker build -t getting-started-go --file=Dockerfile .```
 2 ```docker run --publish 8080:8080 getting-started-go```
+
+# Run in Docker-Compose
+
+1. Go to root of directory
+2. docker-compose up
+
+If you make any code changes, then run the following command to rebuild the code through docker-compose: docker-compose up --build
+
+Entering psql
+
+- docker exec -it go-fileupload-db-1 bash
+- psql -U logan -d fileupload

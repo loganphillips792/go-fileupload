@@ -6,6 +6,8 @@ services:
       context: backend
     ports:
       - "8000:8000"
+    volumes:
+      - "./backend/uploads:/app/uploads" # when we save an image inside the container, it will be reflected on the host machine so we can see the files without having to go inside the cointainer
     depends_on:
       - db
   db:

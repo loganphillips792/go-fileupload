@@ -1,7 +1,6 @@
 package api
 
 import (
-	"database/sql"
 	"errors"
 	"fmt"
 	"image"
@@ -18,7 +17,9 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/gorilla/securecookie"
+	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
+	_ "github.com/lib/pq"
 	utils "github.com/loganphillips792/fileupload"
 	"github.com/loganphillips792/fileupload/config"
 	"go.uber.org/zap"
@@ -26,11 +27,11 @@ import (
 
 type Handler struct {
 	Logger *zap.SugaredLogger
-	DbConn *sql.DB
+	DbConn *sqlx.DB
 	Cfg    *config.AppConf
 }
 
-func BuildHandler(log *zap.SugaredLogger, db *sql.DB, cfg *config.AppConf) *Handler {
+func BuildHandler(log *zap.SugaredLogger, db *sqlx.DB, cfg *config.AppConf) *Handler {
 	return &Handler{
 		Logger: log,
 		DbConn: db,

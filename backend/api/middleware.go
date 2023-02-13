@@ -1,11 +1,11 @@
 package api
 
 import (
-	"database/sql"
 	"errors"
 	"log"
 
 	"github.com/gorilla/securecookie"
+	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/loganphillips792/fileupload/config"
@@ -14,7 +14,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func ApiMiddleware(db *sql.DB, handler *Handler, sugar *zap.SugaredLogger, cfg *config.AppConf) echo.MiddlewareFunc {
+func ApiMiddleware(db *sqlx.DB, handler *Handler, sugar *zap.SugaredLogger, cfg *config.AppConf) echo.MiddlewareFunc {
 	return middleware.KeyAuthWithConfig(middleware.KeyAuthConfig{
 		KeyLookup: "cookie:user_session",
 		Validator: func(key string, c echo.Context) (bool, error) {

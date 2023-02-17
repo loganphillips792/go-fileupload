@@ -123,25 +123,6 @@ func (handler *Handler) UploadFileHandler(c echo.Context) error {
 
 	return c.Blob(http.StatusOK, "application/json", []byte(`{"response":"Upload Successful!!"}`))
 
-	// check that the file is only image file
-	// https://freshman.tech/file-upload-golang/#restrict-the-type-of-the-uploaded-file
-
-	// buff := make([]byte, 512)
-	// _, err = file.Read(buff)
-	// if err != nil {
-	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-	// 	return
-	// }
-
-	// filetype := http.DetectContentType(buff)
-
-	// if filetype != "image/jpeg" && filetype != "image/png" {
-	// 	http.Error(w, "The provided file format is not allowed. Please upload a JPEG or PNG image", http.StatusBadRequest)
-	// 	return
-	// }
-
-	// handler.logger.Infof("File type is %s ", filetype)
-
 }
 
 func (handler *Handler) checkIfFileTypeIsSupported(file multipart.File) (bool, error) {

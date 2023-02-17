@@ -67,11 +67,7 @@ const ThumbsUpIcon = styled(Icon)``;
 const DownloadIcon = styled(Icon)``;
 
 const FileList = ({imagesInfo, isLoading}) => {
-    console.log("PROPS imagesInfo", imagesInfo);
-
-    
     function handleDelete(id) {
-        console.log("CLICKING")
         const requestOptions = {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' }
@@ -79,23 +75,19 @@ const FileList = ({imagesInfo, isLoading}) => {
 
         fetch("http://localhost:8000/images/" + id, requestOptions)
             .then(response => {
-                console.log("RESPONSE STATUS", response.status);
                 return response.json();
             })
     }
 
     return (
         <Container>
-
-
             {isLoading && <div>Loading...</div>}
-
             <Images>
                 {/* {Array.isArray(data) && data.length ? data.map(function (image) { */}
             {imagesInfo ? imagesInfo.map(function (image) {
                 return (
                     <Card>
-                        <img src="http://127.0.0.1:8000/test" />
+                        <img src={`http://127.0.0.1:8000/images/${image.id}`} />
                         <Content>
                             <div>
                                 <span>File Name: {image.name}</span>
@@ -118,7 +110,6 @@ const FileList = ({imagesInfo, isLoading}) => {
 
             }
             </Images>
-
         </Container>
     )
 }

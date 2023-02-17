@@ -273,8 +273,29 @@ func (handler *Handler) DeleteImage(c echo.Context) error {
 	return c.NoContent(http.StatusNoContent)
 }
 
-func (handler *Handler) GetImageByPath(c echo.Context) error {
-	return c.File(("uploads/YO.jpeg"))
+func (handler *Handler) GetImageById(c echo.Context) error {
+	id := c.Param("id")
+	handler.Logger.Infof("Getting image of id %s", id)
+
+	query := "SELECT file_path FROM images where id = $1"
+
+	handler.Logger.Infow("Running SQL statement",
+		"id of image to find", id,
+		"SQL", query,
+	)
+
+	row := handler.DbConn.QueryRow(query, id)
+
+	var imagePath string
+	err := row.Scan(&imagePath)
+
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	handler.Logger.Infof("Image path is %s", imagePath)
+
+	return c.File(imagePath)
 }
 
 // https://github.com/labstack/echo/blob/v3.3.10/context.go#L542

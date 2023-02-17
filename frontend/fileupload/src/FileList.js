@@ -11,6 +11,13 @@ const Container = styled.div`
 `;
 
 const Images = styled.div`
+    display: flex;
+    justify-content: space-evenly;
+        
+    /*
+    
+    attempt at CSS grid solution
+
     margin: 0 auto;
     max-width: 1000px;
     display: grid;
@@ -19,12 +26,16 @@ const Images = styled.div`
     gap: 20px;
     font-family: sans-serif;
     padding-top: 30px;
+    */
+    
+   
+    border: 2px solid red;
 `
 
 const Card = styled.div`
     border: 1px solid #ccc;
     box-shadow: 2px 2px 6px 0px  rgba(0,0,0,0.3);
-
+    // flex: 1;
     img {
         width: 100%;
         height: 150px;

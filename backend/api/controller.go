@@ -91,7 +91,6 @@ func (handler *Handler) UploadFileHandler(c echo.Context) error {
 	}
 
 	dst, err := os.Create(filePath)
-	fmt.Println(filePath)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}

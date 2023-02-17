@@ -215,7 +215,6 @@ func (handler *Handler) GetAllFiles(c echo.Context) error {
 	)
 
 	rows, err := handler.DbConn.Query(query)
-
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -225,7 +224,7 @@ func (handler *Handler) GetAllFiles(c echo.Context) error {
 	var images []Image
 	for rows.Next() {
 		var image Image
-		err := rows.Scan(&image.Id, &image.Name, &image.FilePath)
+		err := rows.Scan(&image.Id, &image.Name, &image.FilePath, &image.BlackAndWhiteFilePath)
 
 		if err != nil {
 			log.Fatal(err)

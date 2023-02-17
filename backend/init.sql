@@ -16,7 +16,8 @@
 CREATE TABLE IF NOT EXISTS images (
   id SERIAL PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
-  file_path VARCHAR(255) NOT NULL
+  file_path VARCHAR(255) NOT NULL,
+  black_and_white_file_path VARCHAR(255) NULL
 );
 
 -- Create 'users' table

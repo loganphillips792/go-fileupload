@@ -73,7 +73,7 @@ GORILLA_SESSIONS_BLOCK_KEY=<some_block_key_here>
 1. Go to root of directory
 2. docker-compose up
 
-If you make any code changes, then run the following command to rebuild the code through docker-compose: docker-compose up --build
+If you make any code changes, then run the following command to rebuild the code through docker-compose: docker-compose up backend --build
 
 Entering psql
 

@@ -5,9 +5,10 @@ import (
 )
 
 type Image struct {
-	Id       int    `json:"id"`
-	Name     string `json:"name"`
-	FilePath string `json:"file_path"`
+	Id                    int            `json:"id"`
+	Name                  string         `json:"name"`
+	FilePath              string         `json:"file_path"`
+	BlackAndWhiteFilePath sql.NullString `json:"black_and_white_file_path"`
 }
 
 type User struct {

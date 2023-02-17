@@ -55,7 +55,5 @@ func createPostgresConnectionUrl() (string, error) {
 		return "", errors.New("DB_PORT NOT SET")
 	}
 
-	fmt.Println("URL")
-	fmt.Println(fmt.Printf("postgres://%s:%s@%s:%s/%s?sslmode=disable", username, password, host, dbPort, dbName))
 	return fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", username, password, host, dbPort, dbName), nil
 }

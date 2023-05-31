@@ -5,6 +5,10 @@ Simple app to practice uploading and downloading files in React and GO
 - Convert to Vite
 - React Drag and Drop file upload
 - Manitine components
+- Convert to Keycloak for Authentication: https://mikebolshakov.medium.com/keycloak-with-go-web-services-why-not-f806c0bc820a
+    - https://gruchalski.com/posts/2020-09-03-keycloak-with-docker-compose/
+    - https://www.keycloak.org/getting-started/getting-started-docker
+    - https://subscription.packtpub.com/book/cloud-and-networking/9781800562493/9/ch09lvl1sec59/integrating-with-golang-applications
 
 # Running the Application
 

@@ -9,6 +9,7 @@ Simple app to practice uploading and downloading files in React and GO
     - https://gruchalski.com/posts/2020-09-03-keycloak-with-docker-compose/
     - https://www.keycloak.org/getting-started/getting-started-docker
     - https://subscription.packtpub.com/book/cloud-and-networking/9781800562493/9/ch09lvl1sec59/integrating-with-golang-applications
+- Make image cards look like: https://mantine.dev/core/card/
 
 # Running the Application
 
@@ -45,12 +46,10 @@ GORILLA_SESSIONS_BLOCK_KEY=<some_block_key_here>
 3. ```docker run --publish 8000:8000 getting-started-go```
 4. ```curl 127.0.0.1:8000/api/hello```
 
-## To view SQL Lite Database
+## To Run Postgres DB
 
-1. Connect to a new SQL Lite database
-2. JDBC URL: ```jdbc:sqlite:/Users/logan/go-fileupload/backend/data.db```
-3. Path: ```/Users/logan/go-fileupload/backend/data.db```
-4. Connect
+1. `docker-compose up -d db`
+    - Make sure that the DB port is set to 5433 in the env file (if you are running the Go app from outside a docker container)
 
 # Uploading Images
 ## Through UI
@@ -60,7 +59,13 @@ GORILLA_SESSIONS_BLOCK_KEY=<some_block_key_here>
 
 ## Through Curl Command
 
+- `curl -X POST -F "file_name=example_name" -F "file=@48yI8S4.jpeg" http://localhost:8000/uploadfile/`
+
 # Downloading files
+
+## Through UI
+
+1. Go to http://localhost:8000/download_csv/ in another tab
 
 # Running unit tests
 

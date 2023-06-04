@@ -9,6 +9,7 @@ Simple app to practice uploading and downloading files in React and GO
     - https://gruchalski.com/posts/2020-09-03-keycloak-with-docker-compose/
     - https://www.keycloak.org/getting-started/getting-started-docker
     - https://subscription.packtpub.com/book/cloud-and-networking/9781800562493/9/ch09lvl1sec59/integrating-with-golang-applications
+    - https://levelup.gitconnected.com/building-micro-services-in-go-using-keycloak-for-authorisation-e00a29b80a43
 - Make image cards look like: https://mantine.dev/core/card/
 
 # Running the Application

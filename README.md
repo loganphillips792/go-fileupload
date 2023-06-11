@@ -19,7 +19,7 @@ Simple app to practice uploading and downloading files in React and GO
 - In a terminal:
     - cd frontend/fileupload
     - npm install
-    - npm start
+    - npm run dev
     - Access the UI at http://localhost:3000/app
 
 ## Backend

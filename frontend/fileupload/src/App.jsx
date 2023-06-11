@@ -1,17 +1,15 @@
-import logo from './logo.svg';
-import './App.css';
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react'
+import reactLogo from './assets/react.svg'
+import viteLogo from '/vite.svg'
+import './App.css'
 import styled from "styled-components";
 import FileList from './FileList';
 import { Button } from '@mantine/core';
 import { FileButton } from '@mantine/core';
 import { Group, Text, useMantineTheme } from '@mantine/core';
-import { IconUpload, IconPhoto, IconX } from '@tabler/icons';
-import { Dropzone, DropzoneProps, IMAGE_MIME_TYPE } from '@mantine/dropzone';
+import { Dropzone, IMAGE_MIME_TYPE } from '@mantine/dropzone';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faImage, faUpload, faCancel } from '@fortawesome/free-solid-svg-icons'
-
-
 
 const Container = styled.div``;
 
@@ -19,10 +17,9 @@ const UploadButton = styled(Button)``;
 const DownloadButton = styled(Button)``;
 
 function App() {
-
   const [selectedFile, setSelectedFile] = useState(null);
 
-  const [fileNameValue, setFileNameValue] = useState("");
+  const [fileNameValue, setFileNameValue]  = useState("");
 
   const [refresh, setRefresh] = useState(false);
 
@@ -34,20 +31,20 @@ function App() {
 
 
   // Similar to componentDidMount and componentDidUpdate:
-  useEffect(() => {
-    fetch(`http://localhost:8000/images/?q=${query}`, {
-      method: 'GET'
-    })
-      .then(response => response.json())
-      .then(result => {
-        console.log("Success:", result);
-        setData(result);
-        setIsLoading(false);
-      })
-      .catch(error => {
-        console.error("Error", error);
-      })
-  }, [query]);
+  // useEffect(() => {
+  //   fetch(`http://localhost:8000/images/?q=${query}`, {
+  //     method: 'GET'
+  //   })
+  //     .then(response => response.json())
+  //     .then(result => {
+  //       console.log("Success:", result);
+  //       setData(result);
+  //       setIsLoading(false);
+  //     })
+  //     .catch(error => {
+  //       console.error("Error", error);
+  //     })
+  // }, [query]);
 
   // https://stackoverflow.com/a/51109645
   const handleSubmission = () => {
@@ -104,6 +101,8 @@ function App() {
 
   }
   const theme = useMantineTheme();
+
+
   return (
     <Container>
       <h1>Go file upload</h1>
@@ -164,12 +163,13 @@ function App() {
       <span>{query}</span>
 
 
-      <FileList imagesInfo={data} isLoading={isLoading} />
+      {/* <FileList imagesInfo={data} isLoading={isLoading} /> */}
+      <FileList />
 
       <DownloadButton onClick={handleDownloadCSV}>Download CSV</DownloadButton>
 
     </Container>
-  );
+  )
 }
 
-export default App;
+export default App

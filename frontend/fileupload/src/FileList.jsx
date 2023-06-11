@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import styled from "styled-components";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTrash, faThumbsUp, faDownload } from '@fortawesome/free-solid-svg-icons'
+import { useLoaderData, useNavigation } from 'react-router-dom';
 
 
 const Container = styled.div`
@@ -77,7 +78,9 @@ const DeleteIcon = styled(Icon)``;
 const ThumbsUpIcon = styled(Icon)``;
 const DownloadIcon = styled(Icon)``;
 
-const FileList = ({imagesInfo, isLoading}) => {
+const FileList = () => {
+    const images = useLoaderData();
+
     function handleDelete(id) {
         const requestOptions = {
             method: 'DELETE',
@@ -92,12 +95,12 @@ const FileList = ({imagesInfo, isLoading}) => {
 
     return (
         <Container>
-            {isLoading && <div>Loading...</div>}
+            {/* {state == 'loading' && <div>Loading...</div>} */}
             <Images>
                 {/* {Array.isArray(data) && data.length ? data.map(function (image) { */}
-            {imagesInfo ? imagesInfo.map(function (image) {
+            {images ? images.map(function (image) {
                 return (
-                    <Card>
+                    <Card key={image.id}>
                         <img src={`http://127.0.0.1:8000/images/${image.id}`} />
                         <Content>
                             <div>
@@ -123,6 +126,31 @@ const FileList = ({imagesInfo, isLoading}) => {
             </Images>
         </Container>
     )
+}
+
+// loader function for react router
+export const imagesLoader = async () => {
+    // fetch(`http://localhost:8000/images/?q=${query}`, {
+    //     method: 'GET'
+    // })
+
+    const imagesResponse = await fetch('http://localhost:8000/images/');
+    const images = await imagesResponse.json();
+    return images;
+
+
+
+    // fetch(`http://localhost:8000/images/?q=${query}`, {
+    //     method: 'GET'
+    // })
+    //     .then(response => response.json())
+    //     .then(result => {
+    //         console.log("Success:", result);
+    //         return result
+    //     })
+    //     .catch(error => {
+    //         console.error("Error", error);
+    //     })
 }
 
 export default FileList;

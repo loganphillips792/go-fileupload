@@ -9,6 +9,7 @@ Simple app to practice uploading and downloading files in React and GO
     - https://subscription.packtpub.com/book/cloud-and-networking/9781800562493/9/ch09lvl1sec59/integrating-with-golang-applications
     - https://levelup.gitconnected.com/building-micro-services-in-go-using-keycloak-for-authorisation-e00a29b80a43
 - Use mantine cards: https://mantine.dev/core/card/
+- Implement version tags and include in Docker image name: https://stackoverflow.com/questions/66017161/add-a-tag-to-a-docker-image-if-theres-a-git-tag-using-github-action
 
 # Running the Application
 

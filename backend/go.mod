@@ -1,6 +1,6 @@
 module github.com/loganphillips792/fileupload
 
-go 1.18
+go 1.21
 
 require (
 	github.com/google/uuid v1.3.0

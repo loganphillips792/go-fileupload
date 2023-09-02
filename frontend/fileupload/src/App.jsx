@@ -1,14 +1,14 @@
-import { useState, useEffect } from 'react';
-import reactLogo from './assets/react.svg';
-import viteLogo from '/vite.svg';
-import './App.css';
-import styled from 'styled-components';
-import FileList from './FileList';
+import { useState, useEffect } from "react";
+import reactLogo from "./assets/react.svg";
+import viteLogo from "/vite.svg";
+import "./App.css";
+import styled from "styled-components";
+import FileList from "./FileList";
 
-import { Dropzone, IMAGE_MIME_TYPE } from '@mantine/dropzone';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faImage, faUpload, faCancel } from '@fortawesome/free-solid-svg-icons';
-import { MantineProvider, Text, Button, Group, useMantineTheme } from '@mantine/core';
+import { Dropzone, IMAGE_MIME_TYPE } from "@mantine/dropzone";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faImage, faUpload, faCancel } from "@fortawesome/free-solid-svg-icons";
+import { MantineProvider, Text, Button, Group, useMantineTheme } from "@mantine/core";
 
 const Container = styled.div``;
 
@@ -18,15 +18,15 @@ const DownloadButton = styled(Button)``;
 function App() {
   const [selectedFile, setSelectedFile] = useState(null);
 
-  const [fileNameValue, setFileNameValue] = useState('');
+  const [fileNameValue, setFileNameValue] = useState("");
 
   const [refresh, setRefresh] = useState(false);
 
   const [data, setData] = useState([]);
-  console.log('DATA', data);
+  console.log("DATA", data);
   const [isLoading, setIsLoading] = useState(false);
 
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
 
   // Similar to componentDidMount and componentDidUpdate:
   // useEffect(() => {
@@ -48,53 +48,53 @@ function App() {
   const handleSubmission = () => {
     const formData = new FormData();
 
-    formData.append('file', selectedFile);
-    formData.append('file_name', fileNameValue);
+    formData.append("file", selectedFile);
+    formData.append("file_name", fileNameValue);
 
-    fetch('http://localhost:8000/uploadfile/', {
-      method: 'POST',
+    fetch("http://localhost:8000/uploadfile/", {
+      method: "POST",
       body: formData,
     })
       .then((response) => response.json())
       .then((result) => {
-        console.log('Success:', result);
+        console.log("Success:", result);
         setRefresh(!refresh);
       })
       .catch((error) => {
-        console.error('Error', error);
+        console.error("Error", error);
       });
   };
 
   const handleDownloadCSV = () => {
-    fetch('http://localhost:8000/download/', {
-      method: 'GET',
+    fetch("http://localhost:8000/download/", {
+      method: "GET",
     })
       .then((resp) => resp.text())
       .then((response) => {
-        console.log('RESPONSE', response);
+        console.log("RESPONSE", response);
 
         // Creating a Blob for having a csv file format
         // and passing the data with type
-        const blob = new Blob([response], { type: 'text/csv' });
+        const blob = new Blob([response], { type: "text/csv" });
 
         // Creating an object for downloading url
         const url = window.URL.createObjectURL(blob);
 
         // Creating an anchor(a) tag of HTML
-        const a = document.createElement('a');
+        const a = document.createElement("a");
 
         // Passing the blob downloading url
-        a.setAttribute('href', url);
+        a.setAttribute("href", url);
 
         // Setting the anchor tag attribute for downloading
         // and passing the download file name
-        a.setAttribute('download', 'download.csv');
+        a.setAttribute("download", "download.csv");
 
         // Performing a download with click
         a.click();
       })
       .catch((error) => {
-        console.error('Error', error);
+        console.error("Error", error);
       });
   };
   const theme = useMantineTheme();
@@ -106,11 +106,11 @@ function App() {
 
         <Dropzone
           onDrop={(files) => setSelectedFile(files[0])}
-          onReject={(files) => console.log('rejected files', files)}
+          onReject={(files) => console.log("rejected files", files)}
           maxSize={3 * 1024 ** 2}
           accept={IMAGE_MIME_TYPE}
         >
-          <Group position="center" spacing="xl" style={{ minHeight: 220, pointerEvents: 'none' }}>
+          <Group position="center" spacing="xl" style={{ minHeight: 220, pointerEvents: "none" }}>
             <Dropzone.Accept>
               <FontAwesomeIcon icon={faImage} />
             </Dropzone.Accept>

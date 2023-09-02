@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
-import styled from 'styled-components';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faThumbsUp, faDownload } from '@fortawesome/free-solid-svg-icons';
-import { useLoaderData, useNavigation } from 'react-router-dom';
+import { useEffect, useState } from "react";
+import styled from "styled-components";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTrash, faThumbsUp, faDownload } from "@fortawesome/free-solid-svg-icons";
+import { useLoaderData, useNavigation } from "react-router-dom";
 
 const Container = styled.div`
   h1 {
@@ -79,11 +79,11 @@ const FileList = () => {
 
   function handleDelete(id) {
     const requestOptions = {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
     };
 
-    fetch('http://localhost:8000/images/' + id, requestOptions).then((response) => {
+    fetch("http://localhost:8000/images/" + id, requestOptions).then((response) => {
       return response.json();
     });
   }
@@ -131,7 +131,7 @@ export const imagesLoader = async () => {
   //     method: 'GET'
   // })
 
-  const imagesResponse = await fetch('http://localhost:8000/images/');
+  const imagesResponse = await fetch("http://localhost:8000/images/");
   const images = await imagesResponse.json();
   return images;
 

@@ -4,12 +4,11 @@ import viteLogo from '/vite.svg'
 import './App.css'
 import styled from "styled-components";
 import FileList from './FileList';
-import { Button } from '@mantine/core';
-import { FileButton } from '@mantine/core';
-import { Group, Text, useMantineTheme } from '@mantine/core';
+
 import { Dropzone, IMAGE_MIME_TYPE } from '@mantine/dropzone';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faImage, faUpload, faCancel } from '@fortawesome/free-solid-svg-icons'
+import { MantineProvider, Text, Button, Group, useMantineTheme } from '@mantine/core';
 
 const Container = styled.div``;
 
@@ -104,7 +103,8 @@ function App() {
 
 
   return (
-    <Container>
+    <MantineProvider>
+      <Container>
       <h1>Go file upload</h1>
 
       <Dropzone
@@ -169,6 +169,7 @@ function App() {
       <DownloadButton onClick={handleDownloadCSV}>Download CSV</DownloadButton>
 
     </Container>
+    </MantineProvider>
   )
 }
 

@@ -53,7 +53,7 @@ function App() {
 
     fetch("http://localhost:8000/uploadfile/", {
       method: "POST",
-      body: formData,
+      body: formData
     })
       .then((response) => response.json())
       .then((result) => {
@@ -67,7 +67,7 @@ function App() {
 
   const handleDownloadCSV = () => {
     fetch("http://localhost:8000/download/", {
-      method: "GET",
+      method: "GET"
     })
       .then((resp) => resp.text())
       .then((response) => {

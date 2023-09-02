@@ -14,10 +14,10 @@ const router = createBrowserRouter([
       {
         path: "app",
         element: <App />,
-        loader: imagesLoader,
-      },
-    ],
-  },
+        loader: imagesLoader
+      }
+    ]
+  }
 ]);
 
 ReactDOM.createRoot(document.getElementById("root")).render(<RouterProvider router={router} />);

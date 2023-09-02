@@ -6,18 +6,18 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { imagesLoader } from "./FileList.jsx";
 
 const router = createBrowserRouter([
-  {
-    path: "/",
-    // element: <Root />,
-    // loader: rootLoader,
-    children: [
-      {
-        path: "app",
-        element: <App />,
-        loader: imagesLoader,
-      },
-    ],
-  },
+    {
+        path: "/",
+        // element: <Root />,
+        // loader: rootLoader,
+        children: [
+            {
+                path: "app",
+                element: <App />,
+                loader: imagesLoader,
+            },
+        ],
+    },
 ]);
 
 ReactDOM.createRoot(document.getElementById("root")).render(<RouterProvider router={router} />);

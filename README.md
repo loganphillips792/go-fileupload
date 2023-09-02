@@ -60,30 +60,19 @@ GORILLA_SESSIONS_BLOCK_KEY=<some_block_key_here>
 
 - `curl -X POST -F "file_name=example_name" -F "file=@48yI8S4.jpeg" http://localhost:8000/uploadfile/`
 
+## Through Postman
+
 # Downloading files
 
 ## Through UI
 
 1. Go to http://localhost:8000/download_csv/ in another tab
 
+## Through Curl Command
+
+## Through Postman
+
 # Running unit tests
 
 1. go test -coverprofile=coverage.out
 2. go tool cover -html=coverage.out
-
-# Run in Docker
-
-1. ```docker build -t getting-started-go --file=Dockerfile .```
-2 ```docker run --publish 8080:8080 getting-started-go```
-
-# Run in Docker-Compose
-
-1. Go to root of directory
-2. docker-compose up
-
-If you make any code changes, then run the following command to rebuild the code through docker-compose: docker-compose up backend --build
-
-Entering psql
-
-- docker exec -it go-fileupload-db-1 bash
-- psql -U logan -d fileupload

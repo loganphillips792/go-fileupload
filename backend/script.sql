@@ -10,38 +10,26 @@
 -- DROP TABLE IF EXISTS sessions;
 -- Create 'images' table
 CREATE TABLE IF NOT EXISTS images (
-  id SERIAL PRIMARY KEY,
-  name VARCHAR(255) NOT NULL,
-  file_path VARCHAR(255) NOT NULL,
-  black_and_white_file_path VARCHAR(255) NULL
+    id INTEGER PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    file_path VARCHAR(255) NOT NULL,
+    black_and_white_file_path VARCHAR(255) NULL
 );
 -- Create 'users' table
 CREATE TABLE IF NOT EXISTS users (
-  id SERIAL PRIMARY KEY,
-  username VARCHAR(50) NOT NULL,
-  email VARCHAR(255) NULL,
-  password VARCHAR(255) NOT NULL
+    id INTEGER PRIMARY KEY,
+    username VARCHAR(50) NOT NULL,
+    email VARCHAR(255) NULL,
+    password VARCHAR(255) NOT NULL
 );
 -- Create 'sessions' table
 CREATE TABLE IF NOT EXISTS sessions (
-  session_id TEXT PRIMARY KEY,
-  expires_at TIMESTAMP NOT NULL
+    session_id TEXT PRIMARY KEY,
+    expires_at TIMESTAMP NOT NULL
 );
 -- Insert test data into 'images' table
-INSERT INTO images (name, file_path)
-VALUES ('image1', '/path/to/image1.png'),
-  ('image2', '/path/to/image2.png');
+INSERT INTO images (id, name, file_path) VALUES (1, 'image1', '/path/to/image1.png'), (2, 'image2', '/path/to/image2.png');
 -- Insert test data into 'users' table
-INSERT INTO users (username, email, password)
-VALUES ('user1', 'user1@example.com', 'password1'),
-  ('user2', 'user2@example.com', 'password2');
+INSERT INTO users (username, email, password) VALUES ('user1', 'user1@example.com', 'password1'), ('user2', 'user2@example.com', 'password2');
 -- Insert test data into 'sessions' table
-INSERT INTO sessions (session_id, expires_at)
-VALUES (
-    '6fcbcf6c-7366-4ec6-9b84-11f13d6308f9',
-    '2023-02-13 23:59:59'
-  ),
-  (
-    'edf7b15d-6d0b-4272-a1a3-3049bde67d15',
-    '2023-02-14 23:59:59'
-  );
+INSERT INTO sessions (session_id, expires_at) VALUES ('6fcbcf6c-7366-4ec6-9b84-11f13d6308f9','2023-02-13 23:59:59'),('edf7b15d-6d0b-4272-a1a3-3049bde67d15','2023-02-14 23:59:59');

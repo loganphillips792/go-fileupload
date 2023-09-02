@@ -3,15 +3,19 @@ package main
 // https://stackoverflow.com/questions/21948243/how-can-i-post-files-and-json-data-together-with-curl
 
 import (
+	"database/sql"
+	"errors"
+	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/loganphillips792/fileupload/api"
 	"github.com/loganphillips792/fileupload/config"
-	"github.com/loganphillips792/fileupload/db"
 
 	_ "github.com/mattn/go-sqlite3"
 	"go.uber.org/zap"
@@ -32,11 +36,14 @@ func main() {
 		log.Print("Error when encoding json")
 	}
 
-	db, postgresErr := db.CreatePostgresConnection()
+	// db, postgresErr := db.CreatePostgresConnection()
 
-	if postgresErr != nil {
-		logger.Error(postgresErr.Error())
-	}
+	// if postgresErr != nil {
+	// 	logger.Error(postgresErr.Error())
+	// }
+
+	db := initializeDatabase()
+	defer db.Close()
 
 	sugar := logger.Sugar()
 	handler := api.BuildHandler(sugar, db, cfg)
@@ -76,4 +83,66 @@ func setupRouter(e *echo.Echo, db *sqlx.DB, handler *api.Handler, sugar *zap.Sug
 	e.POST("/register/", handler.Register)
 	e.POST("/login/", handler.Login)
 
+}
+
+func initializeDatabase() *sqlx.DB {
+	log.Print("Initializing SQL Lite database...")
+
+	// TODO: only create and seed database if it doesn't exist
+	file, openFileErr := os.Open("data.db")
+
+	if openFileErr != nil {
+		log.Print(openFileErr.Error())
+	}
+
+	if errors.Is(openFileErr, os.ErrNotExist) {
+		file, _ = os.Create("data.db")
+	}
+
+	file.Close()
+
+	db, err := sql.Open("sqlite3", "data.db")
+
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	sqlxDb := sqlx.NewDb(db, "sqlite3")
+
+	// run sql files
+
+	if errors.Is(openFileErr, os.ErrNotExist) {
+		c, err := ioutil.ReadFile("script.sql")
+
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+
+		sql := string(c)
+
+		_, err = db.Exec(sql)
+
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+	}
+
+	// db, err := sqlx.Open("sqlite3", "data.db")
+
+	// if err != nil {
+	// 	return nil
+	// }
+
+	// err = db.Ping()
+
+	// if err != nil {
+	// 	db.Close()
+	// 	return nil
+	// }
+
+	// }
+
+	return sqlxDb
 }

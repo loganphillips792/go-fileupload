@@ -43,18 +43,15 @@ func (handler *Handler) UploadFileHandler(c echo.Context) error {
 	handler.Logger.Infof("Content Length %d ", c.Request().ContentLength)
 
 	file, err := c.FormFile("file")
-
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
 	// check if file type is supported
-
 	fileToCheck, _ := file.Open()
-
 	_, err = handler.checkIfFileTypeIsSupported(fileToCheck)
-
 	if err != nil {
+		handler.Logger.Error(err)
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
@@ -62,16 +59,13 @@ func (handler *Handler) UploadFileHandler(c echo.Context) error {
 
 	// open the file
 	src, err := file.Open()
-
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
-
 	defer src.Close()
 
 	// Create the uploads fodler if it doesn't already exist
 	err = os.MkdirAll("uploads", os.ModePerm)
-
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
@@ -138,6 +132,8 @@ func (handler *Handler) checkIfFileTypeIsSupported(file multipart.File) (bool, e
 	switch contentType {
 	case "image/jpeg":
 		return true, nil
+	case "image/png":
+		return true, nil
 	default:
 		return false, errors.New("file type not supported")
 	}
@@ -147,8 +143,7 @@ func (handler *Handler) checkIfFileTypeIsSupported(file multipart.File) (bool, e
 // show as a thumbnail, and then they can click download to download the new image
 // https://stackoverflow.com/questions/42516203/converting-rgba-image-to-grayscale-golang
 func (handler *Handler) changeImageToBlackAndWhite(filePath string) {
-	fmt.Println("Converting image to black and white...")
-	fmt.Println("File path is", filePath)
+	handler.Logger.Infow("Hello", "msg", "Converting image to black and white...", "file path", filePath)
 
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -160,7 +155,7 @@ func (handler *Handler) changeImageToBlackAndWhite(filePath string) {
 	img, _, err := image.Decode(file)
 
 	if err != nil {
-		handler.Logger.Error("Error ")
+		handler.Logger.Error(err)
 	}
 
 	// Create a new image with the same dimensions as the original
@@ -216,18 +211,21 @@ func (handler *Handler) GetAllFiles(c echo.Context) error {
 
 	rows, err := handler.DbConn.Query(query)
 	if err != nil {
+		handler.Logger.Info(err)
 		log.Fatal(err)
 	}
 
 	defer rows.Close()
 
+	fmt.Println("Getting images")
 	var images []Image
 	for rows.Next() {
 		var image Image
 		err := rows.Scan(&image.Id, &image.Name, &image.FilePath, &image.BlackAndWhiteFilePath)
 
 		if err != nil {
-			log.Fatal(err)
+			handler.Logger.Error(err)
+			// log.Fatal(err)
 		}
 
 		images = append(images, image)

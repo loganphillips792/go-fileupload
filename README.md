@@ -20,6 +20,9 @@ Simple app to practice uploading and downloading files in React and GO
     - npm run dev
     - Access the UI at http://localhost:3000/app
 
+- To format the files, run ```npm run format```. This configuration is managed by the .prettierrc file
+    - To see all options, please see https://prettier.io/docs/en/options.html
+
 ## Backend
 
 Create ```.env``` file at root of backend. Look at .env.example to see the contents

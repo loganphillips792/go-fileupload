@@ -80,7 +80,7 @@ const FileList = () => {
   function handleDelete(id) {
     const requestOptions = {
       method: "DELETE",
-      headers: { "Content-Type": "application/json" }
+      headers: { "Content-Type": "application/json" },
     };
 
     fetch("http://localhost:8000/images/" + id, requestOptions).then((response) => {

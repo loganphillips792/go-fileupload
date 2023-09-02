@@ -31,16 +31,15 @@ func main() {
 
 	// Set up logging
 	logger, _ := zap.NewProduction()
+
+	if cfg.AppEnvironment == "development" {
+		logger, _ = zap.NewDevelopment()
+	}
+
 	err := logger.Sync() // flushes buffer, if any
 	if err != nil {      // for linting
 		log.Print("Error when encoding json")
 	}
-
-	// db, postgresErr := db.CreatePostgresConnection()
-
-	// if postgresErr != nil {
-	// 	logger.Error(postgresErr.Error())
-	// }
 
 	db := initializeDatabase()
 	defer db.Close()
@@ -50,6 +49,13 @@ func main() {
 
 	e := echo.New()
 	setupRouter(e, db, handler, sugar, cfg)
+
+	// Create the uploads fodler if it doesn't already exist
+	err = os.MkdirAll("uploads", os.ModePerm)
+	if err != nil {
+		sugar.Error(err)
+	}
+
 	e.Logger.Fatal(e.Start(":8000"))
 }
 
@@ -88,7 +94,6 @@ func setupRouter(e *echo.Echo, db *sqlx.DB, handler *api.Handler, sugar *zap.Sug
 func initializeDatabase() *sqlx.DB {
 	log.Print("Initializing SQL Lite database...")
 
-	// TODO: only create and seed database if it doesn't exist
 	file, openFileErr := os.Open("data.db")
 
 	if openFileErr != nil {
@@ -109,8 +114,7 @@ func initializeDatabase() *sqlx.DB {
 
 	sqlxDb := sqlx.NewDb(db, "sqlite3")
 
-	// run sql files
-
+	// create tables and seed data
 	if errors.Is(openFileErr, os.ErrNotExist) {
 		c, err := ioutil.ReadFile("script.sql")
 
@@ -128,21 +132,5 @@ func initializeDatabase() *sqlx.DB {
 		}
 
 	}
-
-	// db, err := sqlx.Open("sqlite3", "data.db")
-
-	// if err != nil {
-	// 	return nil
-	// }
-
-	// err = db.Ping()
-
-	// if err != nil {
-	// 	db.Close()
-	// 	return nil
-	// }
-
-	// }
-
 	return sqlxDb
 }

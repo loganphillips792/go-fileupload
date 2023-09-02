@@ -64,11 +64,11 @@ func (handler *Handler) UploadFileHandler(c echo.Context) error {
 	}
 	defer src.Close()
 
-	// Create the uploads fodler if it doesn't already exist
-	err = os.MkdirAll("uploads", os.ModePerm)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
-	}
+	// // Create the uploads fodler if it doesn't already exist
+	// err = os.MkdirAll("uploads", os.ModePerm)
+	// if err != nil {
+	// 	return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	// }
 
 	handler.Logger.Infof("File name from user %s ", c.FormValue("file_name"))
 
@@ -302,9 +302,6 @@ func (handler *Handler) DownloadImage(c echo.Context) error {
 }
 
 // send csv to client to automatically download
-// https://medium.com/wesionary-team/create-csv-file-in-go-server-and-download-from-reactjs-4f22f148290b
-// https://stackoverflow.com/questions/68162651/go-how-to-response-csv-file
-// https://medium.com/wesionary-team/create-csv-file-in-go-server-and-download-from-reactjs-4f22f148290b
 func (handler *Handler) DownloadCSV(c echo.Context) error {
 	return c.Attachment("data/airtravel.csv", "download.csv")
 }

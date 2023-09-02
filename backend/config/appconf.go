@@ -8,6 +8,7 @@ import (
 )
 
 type AppConf struct {
+	AppEnvironment          string
 	GorillaSessionsHashKey  string
 	GorillaSessionsBlockKey string
 }
@@ -21,6 +22,7 @@ func Init() (*AppConf, error) {
 	}
 
 	config := &AppConf{
+		AppEnvironment:          os.Getenv("APP_ENV"),
 		GorillaSessionsHashKey:  os.Getenv("GORILLA_SESSIONS_HASH_KEY"),
 		GorillaSessionsBlockKey: os.Getenv("GORILLA_SESSIONS_BLOCK_KEY"),
 	}

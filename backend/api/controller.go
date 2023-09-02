@@ -1,14 +1,9 @@
 package api
 
 import (
-	"errors"
 	"fmt"
-	"image"
-	"image/color"
-	"image/jpeg"
 	"io"
 	"log"
-	"mime/multipart"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -43,18 +38,15 @@ func (handler *Handler) UploadFileHandler(c echo.Context) error {
 	handler.Logger.Infof("Content Length %d ", c.Request().ContentLength)
 
 	file, err := c.FormFile("file")
-
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
 	// check if file type is supported
-
 	fileToCheck, _ := file.Open()
-
-	_, err = handler.checkIfFileTypeIsSupported(fileToCheck)
-
+	_, err = handler.CheckIfFileTypeIsSupported(fileToCheck)
 	if err != nil {
+		handler.Logger.Error(err)
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
@@ -62,19 +54,16 @@ func (handler *Handler) UploadFileHandler(c echo.Context) error {
 
 	// open the file
 	src, err := file.Open()
-
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
-
 	defer src.Close()
 
-	// Create the uploads fodler if it doesn't already exist
-	err = os.MkdirAll("uploads", os.ModePerm)
-
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
-	}
+	// // Create the uploads fodler if it doesn't already exist
+	// err = os.MkdirAll("uploads", os.ModePerm)
+	// if err != nil {
+	// 	return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	// }
 
 	handler.Logger.Infof("File name from user %s ", c.FormValue("file_name"))
 
@@ -118,82 +107,10 @@ func (handler *Handler) UploadFileHandler(c echo.Context) error {
 	}
 
 	// have this run in the background
-	go handler.changeImageToBlackAndWhite(filePath)
+	go handler.ChangeImageToBlackAndWhite(filePath)
 
 	return c.Blob(http.StatusOK, "application/json", []byte(`{"response":"Upload Successful!!"}`))
 
-}
-
-func (handler *Handler) checkIfFileTypeIsSupported(file multipart.File) (bool, error) {
-	// Only the first 512 bytes are used to sniff the content type
-	buffer := make([]byte, 512)
-
-	_, err := file.Read(buffer)
-	if err != nil {
-		return false, err
-	}
-	contentType := http.DetectContentType(buffer)
-	handler.Logger.Info("CONTENT TYPE IS ", contentType)
-
-	switch contentType {
-	case "image/jpeg":
-		return true, nil
-	default:
-		return false, errors.New("file type not supported")
-	}
-}
-
-// When user successfully uploads image, they can click "convert to black and white". The new image will
-// show as a thumbnail, and then they can click download to download the new image
-// https://stackoverflow.com/questions/42516203/converting-rgba-image-to-grayscale-golang
-func (handler *Handler) changeImageToBlackAndWhite(filePath string) {
-	fmt.Println("Converting image to black and white...")
-	fmt.Println("File path is", filePath)
-
-	file, err := os.Open(filePath)
-	if err != nil {
-		handler.Logger.Error("Error ")
-	}
-
-	defer file.Close()
-
-	img, _, err := image.Decode(file)
-
-	if err != nil {
-		handler.Logger.Error("Error ")
-	}
-
-	// Create a new image with the same dimensions as the original
-	bounds := img.Bounds()
-	newImg := image.NewRGBA(bounds)
-
-	// https://stackoverflow.com/a/42518487
-	// Iterate through each pixel in the original image
-	for x := 0; x < bounds.Max.X; x++ {
-		for y := 0; y < bounds.Max.Y; y++ {
-			oldPixel := img.At(x, y)
-			pixel := color.GrayModel.Convert(oldPixel)
-			newImg.Set(x, y, pixel)
-		}
-	}
-
-	// Create a new file for the black and white image
-	newFile, err := os.Create("uploads/bw.jpeg")
-	if err != nil {
-		panic(err)
-	}
-	defer newFile.Close()
-
-	// Encode the new image as a JPEG
-	imageEncodeError := jpeg.Encode(newFile, newImg, nil)
-
-	if imageEncodeError != nil {
-		handler.Logger.Error("Error when encoding image: ", imageEncodeError)
-	}
-
-	time.Sleep(10 * time.Second)
-
-	handler.Logger.Info("changeImageToBlackAndWhite go routine finished")
 }
 
 func (handler *Handler) GetAllFiles(c echo.Context) error {
@@ -216,18 +133,21 @@ func (handler *Handler) GetAllFiles(c echo.Context) error {
 
 	rows, err := handler.DbConn.Query(query)
 	if err != nil {
+		handler.Logger.Info(err)
 		log.Fatal(err)
 	}
 
 	defer rows.Close()
 
+	fmt.Println("Getting images")
 	var images []Image
 	for rows.Next() {
 		var image Image
 		err := rows.Scan(&image.Id, &image.Name, &image.FilePath, &image.BlackAndWhiteFilePath)
 
 		if err != nil {
-			log.Fatal(err)
+			handler.Logger.Error(err)
+			// log.Fatal(err)
 		}
 
 		images = append(images, image)
@@ -304,9 +224,6 @@ func (handler *Handler) DownloadImage(c echo.Context) error {
 }
 
 // send csv to client to automatically download
-// https://medium.com/wesionary-team/create-csv-file-in-go-server-and-download-from-reactjs-4f22f148290b
-// https://stackoverflow.com/questions/68162651/go-how-to-response-csv-file
-// https://medium.com/wesionary-team/create-csv-file-in-go-server-and-download-from-reactjs-4f22f148290b
 func (handler *Handler) DownloadCSV(c echo.Context) error {
 	return c.Attachment("data/airtravel.csv", "download.csv")
 }

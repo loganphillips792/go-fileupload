@@ -20,6 +20,8 @@ import (
 	"go.uber.org/zap"
 )
 
+// https://github.com/gamroil/api-template/blob/main/api/routes.go
+
 type Handler struct {
 	Logger *zap.SugaredLogger
 	DbConn *sqlx.DB

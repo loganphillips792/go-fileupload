@@ -130,7 +130,7 @@ func initializeDatabase() *sqlx.DB {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-
+		log.Print("Database has been created and seeded")
 	}
 	return sqlxDb
 }

@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"time"
+	
 
 	"github.com/google/uuid"
 	"github.com/gorilla/securecookie"
@@ -267,8 +268,8 @@ func (handler *Handler) Login(c echo.Context) error {
 	match := utils.CompareHashAndPassword(userFromDatabase.Password, user.Password)
 
 	if match {
-		var hashKey = []byte("very-secret")       // encode value
-		var blockKey = []byte("a-lot-secret1111") // encrypt value
+		var hashKey = []byte(handler.Cfg.GorillaSessionsHashKey)       // encode value
+		var blockKey = []byte(handler.Cfg.GorillaSessionsHashKey) // encrypt value
 		var s = securecookie.New(hashKey, blockKey)
 
 		// create session ID

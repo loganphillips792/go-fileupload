@@ -2,6 +2,7 @@ package api
 
 import (
 	"crypto/rand"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"log"
@@ -10,7 +11,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"time"
-	"encoding/base64"
 
 	"github.com/gorilla/securecookie"
 	"github.com/jmoiron/sqlx"

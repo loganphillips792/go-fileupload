@@ -9,7 +9,7 @@ import { Dropzone, IMAGE_MIME_TYPE } from "@mantine/dropzone";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faImage, faUpload, faCancel } from "@fortawesome/free-solid-svg-icons";
 import { MantineProvider, Text, Button, Group, useMantineTheme } from "@mantine/core";
-
+import classes from './variables.module.scss';
 
 const Container = styled.div``;
 
@@ -108,7 +108,7 @@ function App() {
     return (
         <MantineProvider>
             <Container>
-                <h1>Go file upload</h1>
+                <h1 className={classes.heading}>Go file upload</h1>
 
                 <Dropzone
                     onDrop={(files) => setSelectedFile(files[0])}

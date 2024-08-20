@@ -12,6 +12,7 @@ Simple app to practice uploading and downloading files in React and GO
 - Implement version tags and include in Docker image name: https://stackoverflow.com/questions/66017161/add-a-tag-to-a-docker-image-if-theres-a-git-tag-using-github-action
 - Containerize frontend app so that it can run on K8s: https://www.knowledgehut.com/blog/web-development/how-to-dockerize-react-app
 - Use React Query
+- Convert from Styled Components to CSS Modules
 
 # Running the Application
 

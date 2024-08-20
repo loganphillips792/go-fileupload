@@ -74,7 +74,7 @@ const DeleteIcon = styled(Icon)``;
 const ThumbsUpIcon = styled(Icon)``;
 const DownloadIcon = styled(Icon)``;
 
-const FileList = () => {
+const FileList = ({ query, setQuery }) => {
     const images = useLoaderData();
 
     function handleDelete(id) {
@@ -90,9 +90,14 @@ const FileList = () => {
 
     return (
         <Container>
+            <h1>File List</h1>
+
+            <input type="text" name="search" value={query} onChange={(e) => setQuery(e.target.value)} />
+            <div>
+                Filtering for <span>{query}</span>
+            </div>
             {/* {state == 'loading' && <div>Loading...</div>} */}
             <Images>
-                {/* {Array.isArray(data) && data.length ? data.map(function (image) { */}
                 {images ? (
                     images.map(function (image) {
                         return (

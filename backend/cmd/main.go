@@ -81,7 +81,7 @@ func setupRouter(e *echo.Echo, db *sqlx.DB, handler *api.Handler, sugar *zap.Sug
 	g.GET("/hello", api.HelloWorld)
 
 	e.GET("/images/", handler.GetAllFiles)
-	e.POST("/uploadfile/", handler.UploadFileHandler, middleware.BodyLimit("1M")) // Body limit middleware sets the maximum allowed size for a request body, if the size exceeds the configured limit, it sends “413 - Request Entity Too Large” response. The body limit is determined based on both Content-Length request header and actual content read, which makes it super secure
+	e.POST("/uploadfile/", handler.UploadFileHandler, middleware.BodyLimit("3M")) // Body limit middleware sets the maximum allowed size for a request body, if the size exceeds the configured limit, it sends “413 - Request Entity Too Large” response. The body limit is determined based on both Content-Length request header and actual content read, which makes it super secure
 	e.DELETE("/images/:id", handler.DeleteImage)
 	e.GET("/images/:id", handler.GetImageById)
 	e.GET("/download_image/", handler.DownloadImage)
@@ -130,7 +130,7 @@ func initializeDatabase() *sqlx.DB {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-
+		log.Print("Database has been created and seeded")
 	}
 	return sqlxDb
 }

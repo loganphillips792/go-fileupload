@@ -10,10 +10,16 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faImage, faUpload, faCancel } from "@fortawesome/free-solid-svg-icons";
 import { MantineProvider, Text, Button, Group, useMantineTheme } from "@mantine/core";
 
+
 const Container = styled.div``;
 
 const UploadButton = styled(Button)``;
 const DownloadButton = styled(Button)``;
+
+// const theme = createTheme({
+//     fontFamily: 'Open Sans, sans-serif',
+//     primaryColor: 'cyan',
+// });
 
 function App() {
     const [selectedFile, setSelectedFile] = useState(null);
@@ -156,13 +162,8 @@ function App() {
 
                 <UploadButton onClick={handleSubmission}>Submit</UploadButton>
 
-                <h1>File List</h1>
-
-                <input type="text" name="search" value={query} onChange={(e) => setQuery(e.target.value)} />
-                <span>{query}</span>
-
                 {/* <FileList imagesInfo={data} isLoading={isLoading} /> */}
-                <FileList />
+                <FileList query={query} setQuery={setQuery} />
 
                 <DownloadButton onClick={handleDownloadCSV}>Download CSV</DownloadButton>
             </Container>

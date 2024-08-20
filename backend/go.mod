@@ -3,7 +3,6 @@ module github.com/loganphillips792/fileupload
 go 1.21
 
 require (
-	github.com/google/uuid v1.3.0
 	github.com/gorilla/securecookie v1.1.1
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/joho/godotenv v1.4.0

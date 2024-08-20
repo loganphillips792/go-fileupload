@@ -1,6 +1,8 @@
 package api
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"log"
@@ -10,7 +12,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/gorilla/securecookie"
 	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
@@ -267,13 +268,18 @@ func (handler *Handler) Login(c echo.Context) error {
 	match := utils.CompareHashAndPassword(userFromDatabase.Password, user.Password)
 
 	if match {
-		var hashKey = []byte("very-secret")       // encode value
-		var blockKey = []byte("a-lot-secret1111") // encrypt value
+		var hashKey = []byte(handler.Cfg.GorillaSessionsHashKey)  // encode value
+		var blockKey = []byte(handler.Cfg.GorillaSessionsHashKey) // encrypt value
 		var s = securecookie.New(hashKey, blockKey)
 
-		// create session ID
-		sessionId := uuid.New().String()
+		// First attempt - create session ID
+		// sessionId := uuid.New().String()
 		expiresAt := time.Now().Add(120 * time.Second).Unix()
+
+		// Second attempt - Create session ID
+		b := make([]byte, 33)
+		rand.Read(b)
+		sessionId := base64.StdEncoding.EncodeToString(b)
 
 		query := "INSERT INTO sessions (session_id, expires_at) VALUES ($1, $2)"
 

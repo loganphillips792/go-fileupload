@@ -8,8 +8,12 @@ import FileList from "./FileList";
 import { Dropzone, IMAGE_MIME_TYPE } from "@mantine/dropzone";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faImage, faUpload, faCancel } from "@fortawesome/free-solid-svg-icons";
-import { MantineProvider, Text, Button, Group, useMantineTheme } from "@mantine/core";
+import { MantineProvider, Text, Button, Group, useMantineTheme, Tabs, rem } from "@mantine/core";
 import classes from './variables.module.scss';
+import { IconPhoto, IconMessageCircle, IconSettings } from '@tabler/icons-react';
+import '@mantine/core/styles.css';
+import '@mantine/dropzone/styles.css';
+
 
 const Container = styled.div``;
 
@@ -106,8 +110,31 @@ function App() {
     const theme = useMantineTheme();
 
     return (
-        <MantineProvider>
             <Container>
+            <Tabs variant="unstyled" defaultValue="settings" classNames={classes}>
+      <Tabs.List grow>
+        <Tabs.Tab
+          value="settings"
+          leftSection={<IconSettings style={{ width: rem(16), height: rem(16) }} />}
+        >
+          Settings
+        </Tabs.Tab>
+        <Tabs.Tab
+          value="messages"
+          leftSection={<IconMessageCircle style={{ width: rem(16), height: rem(16) }} />}
+        >
+          Messages
+        </Tabs.Tab>
+        <Tabs.Tab
+          value="gallery"
+          leftSection={<IconPhoto style={{ width: rem(16), height: rem(16) }} />}
+        >
+          Gallery
+        </Tabs.Tab>
+      </Tabs.List>
+    </Tabs>
+
+
                 <h1 className={classes.heading}>Go file upload</h1>
 
                 <Dropzone
@@ -167,7 +194,6 @@ function App() {
 
                 <DownloadButton onClick={handleDownloadCSV}>Download CSV</DownloadButton>
             </Container>
-        </MantineProvider>
     );
 }
 

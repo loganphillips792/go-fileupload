@@ -43,5 +43,5 @@
 
 body {
     color: rgb(var(--foreground-rgb));
-    background: #7b2525;
+    /* background: #7b2525; */
   }

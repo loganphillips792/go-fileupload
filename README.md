@@ -13,6 +13,7 @@ Simple app to practice uploading and downloading files in React and GO
 - Containerize frontend app so that it can run on K8s: https://www.knowledgehut.com/blog/web-development/how-to-dockerize-react-app
 - Use React Query
 - Convert from Styled Components to CSS Modules
+- Allow users to download different size images 
 
 # Running the Application
 

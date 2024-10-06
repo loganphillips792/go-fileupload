@@ -15,6 +15,7 @@ Simple app to practice uploading and downloading files in React and GO
 - Convert from Styled Components to CSS Modules
 - Create tab of uploaded images, show them in a grid pattern
 - Have original photo and then an arrow pointing to the new one
+- Allow users to download different size images 
 
 # Running the Application
 

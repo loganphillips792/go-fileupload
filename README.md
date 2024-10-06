@@ -13,6 +13,8 @@ Simple app to practice uploading and downloading files in React and GO
 - Containerize frontend app so that it can run on K8s: https://www.knowledgehut.com/blog/web-development/how-to-dockerize-react-app
 - Use React Query
 - Convert from Styled Components to CSS Modules
+- Create tab of uploaded images, show them in a grid pattern
+- Have original photo and then an arrow pointing to the new one
 
 # Running the Application
 
